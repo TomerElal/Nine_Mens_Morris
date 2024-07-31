@@ -8,3 +8,9 @@ class Move(Enum):
     RIGHT = 4
     STOP = 5
 
+
+class MoveType(Enum):
+    PLACE_PIECE = 1
+    MOVE_PIECE = 2
+    REMOVE_OPPONENT_PIECE = 3
+

@@ -1,4 +1,4 @@
-import board
+import game_state
 from move import Move
 
 
@@ -20,20 +20,20 @@ def convert_right_or_left_move_to_action(piece_col_position, piece_row_position,
 
 
 def convert_down_move_to_action(piece_col_position, piece_row_position):
-    if piece_row_position == board.MIDDLE_ROW_LEFT_SIDE:
-        addition_factor = 1 + board.NUM_OF_COLS - piece_col_position
+    if piece_row_position == game_state.MIDDLE_ROW_LEFT_SIDE:
+        addition_factor = 1 + game_state.NUM_OF_COLS - piece_col_position
         return piece_row_position + addition_factor, 0
-    if piece_row_position == board.MIDDLE_ROW_RIGHT_SIDE:
+    if piece_row_position == game_state.MIDDLE_ROW_RIGHT_SIDE:
         addition_factor = 1 + piece_col_position
-        return piece_row_position + addition_factor, board.NUM_OF_COLS - 1
+        return piece_row_position + addition_factor, game_state.NUM_OF_COLS - 1
     return piece_row_position + 1, piece_col_position
 
 
 def convert_up_move_to_action(piece_col_position, piece_row_position):
-    if piece_row_position == board.MIDDLE_ROW_LEFT_SIDE:
-        subtract_factor = board.NUM_OF_COLS - piece_col_position
+    if piece_row_position == game_state.MIDDLE_ROW_LEFT_SIDE:
+        subtract_factor = game_state.NUM_OF_COLS - piece_col_position
         return piece_row_position - subtract_factor, 0
-    if piece_row_position == board.MIDDLE_ROW_RIGHT_SIDE:
+    if piece_row_position == game_state.MIDDLE_ROW_RIGHT_SIDE:
         subtract_factor = 2 + piece_col_position
-        return piece_row_position - subtract_factor, board.NUM_OF_COLS - 1
+        return piece_row_position - subtract_factor, game_state.NUM_OF_COLS - 1
     return piece_row_position - 1, piece_col_position

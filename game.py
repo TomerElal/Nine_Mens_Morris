@@ -1,9 +1,10 @@
-from board import Board
+from game_state import GameState
 from player import Player
+
 
 class Game:
     def __init__(self):
-        self.board = Board()
+        self.board = GameState()
         self.players = [Player("Player 1"), Player("Player 2")]
         self.current_turn = 0
 
