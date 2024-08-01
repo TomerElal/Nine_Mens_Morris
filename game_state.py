@@ -43,15 +43,15 @@ def initialize_board_connections():
 def handle_board_connections_in_middle_row_col(connections, i):
     # Handle vertical middle row.
     vertical_poss_moves = set([Move.RIGHT, Move.LEFT] +
-                              [Move.DOWN] if i == 0 else [Move.UP] +
-                                                         [Move.UP, Move.DOWN] if i == 1 else [])
+                              ([Move.DOWN] if i == 0 else [Move.UP]) +
+                              ([Move.UP, Move.DOWN] if i == 1 else []))
     connections[(i, 1)] = vertical_poss_moves
     connections[((MIDDLE_ROW_RIGHT_SIDE + 1) + i, 1)] = vertical_poss_moves
 
     # Handle horizontal middle col.
     horizontal_poss_moves = set([Move.UP, Move.DOWN] +
-                                [Move.RIGHT] if i == 0 else [Move.LEFT] +
-                                                            [Move.RIGHT, Move.LEFT] if i == 1 else [])
+                                ([Move.RIGHT] if i == 0 else [Move.LEFT]) +
+                                ([Move.RIGHT, Move.LEFT] if i == 1 else []))
     connections[(MIDDLE_ROW_LEFT_SIDE, i)] = horizontal_poss_moves
     connections[(MIDDLE_ROW_RIGHT_SIDE, i)] = horizontal_poss_moves
 
@@ -59,10 +59,10 @@ def handle_board_connections_in_middle_row_col(connections, i):
 def handle_board_connections_in_diagonals(connections, i):
     # Handle (top left corner to bottom right corner) diagonal cells.
     connections[(i, 0)] = {Move.RIGHT, Move.DOWN}
-    connections[((NUM_OF_COLS - 1) - i, 2)] = {Move.LEFT, Move.UP}
+    connections[((NUM_OF_ROWS - 1) - i, 2)] = {Move.LEFT, Move.UP}
 
     # Handle (bottom left corner to top right corner) diagonal cells.
-    connections[((NUM_OF_COLS - 1) - i, 0)] = {Move.RIGHT, Move.UP}
+    connections[((NUM_OF_ROWS - 1) - i, 0)] = {Move.RIGHT, Move.UP}
     connections[(i, 2)] = {Move.LEFT, Move.DOWN}
 
 
@@ -71,6 +71,7 @@ class GameState:
 
     def __init__(self, existing_board=None):
         self.board = existing_board if existing_board else initialize_board()
+        self.display_board()
 
     def display_board(self):
         # Create a visual representation of the Nine Men's Morris board
@@ -135,11 +136,13 @@ class GameState:
         new_state.update_board(prev_position, new_position, piece_color)
         return new_state
 
+    def get_cell_state(self, location):
+        return self.board[location[0]][location[1]]
+
 
 # Example usage
 if __name__ == "__main__":
     board = GameState()
     board.display_board()
-    print(board.board)
     board.update_board((0, 0), (0, 1), CellState.BLUE)
     board.update_board((0, 0), (1, 1), CellState.GREEN)
