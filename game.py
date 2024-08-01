@@ -1,24 +1,86 @@
+import time
+
+from piece import Piece
 from game_state import GameState
-from player import Player
-
-
+from game_state import MoveType
+from utils import move_performed_a_mill
+from exceptions.piece_not_exist import PieceNotExistException
+PLAYER_REMOVE_ERROR_TEMPLATE = (
+    "Player {name} tried to remove opponent's piece at location {location} but there is no piece in this location"
+)
 class Game:
-    def __init__(self):
-        self.board = GameState()
-        self.players = [Player("Player 1"), Player("Player 2")]
-        self.current_turn = 0
+    def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game):
+        self.num_of_pieces_left_to_provide = num_of_initial_pieces * 2
+        self.player_1 = player_1
+        self.player_2 = player_2
+        self.game_state = initial_state
+        self.board_connections = GameState.BOARD_CONNECTIONS
+        self.player_1_turn = player_1_starts_the_game
+        self.current_move_type = MoveType.PLACE_PIECE
+        self.prev_move_type = MoveType.PLACE_PIECE
+        self.winner = None
 
-    def start_game(self):
-        # Start the game loop
+    def run(self):
+        self.game_loop()
+
+    def quit(self):
         pass
 
-    def check_winner(self):
-        # Check if there is a winner
-        pass
+    def game_loop(self):
 
-    def switch_turn(self):
-        self.current_turn = 1 - self.current_turn
+        while True:
 
-    def is_valid_move(self, move):
-        # Validate the move
-        pass
+            if self.player_1_turn:
+                curr_player = self.player_1
+                other_player = self.player_2
+                self.player_1_turn = False
+            else:
+                curr_player = self.player_2
+                other_player = self.player_1
+                self.player_1_turn = True
+            player_color = curr_player.get_player_color()
+
+            if self.current_move_type == MoveType.PLACE_PIECE:
+                self.num_of_pieces_left_to_provide -= 1
+                desired_piece_position = curr_player.get_action(self.game_state, MoveType.PLACE_PIECE)
+                player_new_piece = Piece(player_color, desired_piece_position, self.board_connections[desired_piece_position])
+                curr_player.add_piece(player_new_piece)
+                self.game_state.update_board(new_position=desired_piece_position, piece_color=player_color)
+                if self.num_of_pieces_left_to_provide == 0:
+                    self.current_move_type = MoveType.MOVE_PIECE
+                    self.prev_move_type = MoveType.MOVE_PIECE
+                    curr_player.curr_move_type = MoveType.MOVE_PIECE
+                    other_player.curr_move_type = MoveType.MOVE_PIECE
+                if move_performed_a_mill(desired_piece_position, self.game_state, player_color):
+                    self.player_1_turn = not self.player_1_turn  # We need the same player to play in the next turn.
+                    self.current_move_type = MoveType.REMOVE_OPPONENT_PIECE
+                    curr_player.curr_move_type = MoveType.REMOVE_OPPONENT_PIECE
+
+            elif self.current_move_type == MoveType.MOVE_PIECE:
+                prev_pos, new_pos = curr_player.get_action(self.game_state, MoveType.MOVE_PIECE)
+                curr_player.move_piece(position_of_desired_piece_to_move=prev_pos,
+                                       new_position=new_pos, new_connections=self.board_connections[new_pos])
+                self.game_state.update_board(prev_position=prev_pos, new_position=new_pos, piece_color=player_color)
+                if move_performed_a_mill(new_pos, self.game_state, player_color):
+                    self.player_1_turn = not self.player_1_turn  # We need the same player to play in the next turn.
+                    self.current_move_type = MoveType.REMOVE_OPPONENT_PIECE
+                    curr_player.curr_move_type = MoveType.REMOVE_OPPONENT_PIECE
+
+
+            else:  # Case of MoveType.REMOVE_OPPONENT_PIECE
+                opponent_remove_location = curr_player.get_action(self.game_state, MoveType.REMOVE_OPPONENT_PIECE)
+                if not other_player.remove_piece(opponent_remove_location):
+                    raise PieceNotExistException(PLAYER_REMOVE_ERROR_TEMPLATE.format(
+                        name=curr_player.name,
+                        location=opponent_remove_location
+                    ))
+                self.game_state.update_board(prev_position=opponent_remove_location, piece_color=player_color)
+                self.current_move_type = self.prev_move_type
+                curr_player.curr_move_type = self.prev_move_type
+
+            if other_player.is_lost_game(self.game_state, self.current_move_type):
+                self.winner = curr_player
+                break
+
+    def get_game_result(self):
+        return self.winner
