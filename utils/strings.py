@@ -31,45 +31,27 @@ UNCORRELATED_PIECE_COLOR_DEFAULT_MESSAGE = "The piece color does not match the e
 
 SEPERATOR = "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 
-MINIMAX_CHOOSE_MOVEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                           "\nIt's time for the Minimax Player to move a piece.\n"
+PLAYER_CHOOSE_MOVEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
+                           "\nIt's time for the {player_name} to move a piece.\n"
                            + Style.RESET_ALL + SEPERATOR)
 
-MINIMAX_CHOOSE_PLACEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                            "\nIt's time for the Minimax Player choose a place for new piece.\n"
+PLAYER_CHOOSE_PLACEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
+                            "\nIt's time for the {player_name} choose a place for new piece.\n"
                             + Style.RESET_ALL + SEPERATOR)
-
-MINIMAX_CHOOSE_REMOVAL = (SEPERATOR + Fore.LIGHTYELLOW_EX +
-                          "\n🚀🚀 It's time for the Minimax Player to remove opponent's piece! 🚀🚀\n"
+PLAYER_CHOOSE_REMOVAL = (SEPERATOR + Fore.LIGHTYELLOW_EX +
+                          "\n🚀🚀 It's time for the {player_name} to remove opponent's piece! 🚀🚀\n"
                           + Style.RESET_ALL + SEPERATOR)
 
-MINIMAX_MOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to move piece from location "
+PLAYER_MOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "{player_name} chose to move piece from location "
 
-MINIMAX_PLACED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to place a piece at location "
+PLAYER_PLACED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "{player_name} chose to place a piece at location "
 
-MINIMAX_REMOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to remove opponent's piece from location "
+PLAYER_REMOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "{player_name} chose to remove opponent's piece from location "
 
 TO_LOCATION = " to location "
 
 TIME_TO_SLEEP = 0
 
-RANDOM_CHOOSE_MOVEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                          "\nIt's time for the Random Player to move a piece.\n"
-                          + Style.RESET_ALL + SEPERATOR)
-
-RANDOM_CHOOSE_PLACEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                           "\nIt's time for the Random Player choose a place for new piece.\n"
-                           + Style.RESET_ALL + SEPERATOR)
-
-RANDOM_CHOOSE_REMOVAL = (SEPERATOR + Fore.LIGHTYELLOW_EX +
-                         "\n🚀🚀 It's time for the Random Player to remove opponent's piece! 🚀🚀\n"
-                         + Style.RESET_ALL + SEPERATOR)
-
-RANDOM_MOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Random Player chose to move piece from location "
-
-RANDOM_PLACED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Random Player chose to place a piece at location "
-
-RANDOM_REMOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Random Player chose to remove opponent's piece from location "
 
 INSERT_PIECE_INDEX_TO_MOVE = ("Choose a piece of yours to move.\nInsert it's index by the format [num_row][num_column]."
                               "\nFor example, if you want to move a piece that placed in row number 5 and"
@@ -105,6 +87,8 @@ PLAYER_TURN_GREETING_TEMPLATE = "{color}\n{name} {reset} it's your turn! 😎\n"
 RANDOM_PLAYER = "Random Player"
 
 MINIMAX_PLAYER = "Minimax Player"
+
+EXPECTIMAX_PLAYER = "Expectimax Player"
 
 PLAYER2 = "Player 2"
 

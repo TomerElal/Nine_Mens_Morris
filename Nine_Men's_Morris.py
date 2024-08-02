@@ -5,6 +5,8 @@ from src.move import MoveType
 from player_types.random_player import RandomPlayer
 from player_types.minimax_player import MinimaxPlayer
 from search_agents.minimax_agent import MiniMaxAgent
+from player_types.expectimax_player import ExpectimaxPlayer
+from search_agents.expectimax_agent import ExpectiMaxAgent
 from utils.strings import *
 
 NUM_OF_PIECES = 9
@@ -35,11 +37,11 @@ def main():
     user_player1 = UserPlayer(PLAYER1, NUM_OF_PIECES, CellState.GREEN)
     user_player2 = UserPlayer(PLAYER2, NUM_OF_PIECES, CellState.BLUE)
 
-    minimax_agent = MiniMaxAgent()
-    minimax_player = MinimaxPlayer(MINIMAX_PLAYER, NUM_OF_PIECES, CellState.GREEN, minimax_agent)
+    expectimax_agent = ExpectiMaxAgent()
+    expectimax_player = ExpectimaxPlayer(EXPECTIMAX_PLAYER, NUM_OF_PIECES, CellState.GREEN, expectimax_agent)
     random_player = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.BLUE)
 
-    game_manager = GameManager(player_1=minimax_player, player_2=random_player)
+    game_manager = GameManager(player_1=expectimax_player, player_2=random_player)
     game_manager.start_game()
 
 

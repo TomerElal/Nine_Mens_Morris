@@ -1,7 +1,6 @@
 import copy
 
 from colorama import Fore
-
 from utils import strings
 from exceptions.piece_not_exist import PieceNotExistException
 from src.move import Move, MoveType

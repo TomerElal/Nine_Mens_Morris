@@ -5,7 +5,7 @@ from enum import Enum
 class AgentType(Enum):
     MAX = 1
     MIN = 2
-    EXPECT = 3
+    EXPECTED = 3
 
 
 class Agent(ABC):

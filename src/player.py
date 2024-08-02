@@ -106,3 +106,4 @@ class Player(ABC):
                 ))
 
         return game_state.get_empty_cells()
+

@@ -1,8 +1,7 @@
-import time
-
 from src.player import Player
 from src.move import MoveType
 from utils.strings import *
+from utils.utils import perform_action_to_console
 
 
 class MinimaxPlayer(Player):
@@ -12,22 +11,20 @@ class MinimaxPlayer(Player):
         self.search_agent = agent
 
     def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE):
+
         result = self.search_agent.get_action(state)
+
         if type_of_required_action == MoveType.MOVE_PIECE:
-            print(MINIMAX_CHOOSE_MOVEMENT)
-            time.sleep(TIME_TO_SLEEP)
-            print_result = MINIMAX_MOVED_PIECE + str(result[0]) + TO_LOCATION + str(
-                result[1]) + Style.RESET_ALL + SEPERATOR
+            print_result = perform_action_to_console(PLAYER_CHOOSE_MOVEMENT, MINIMAX_PLAYER,
+                                                     PLAYER_MOVED_PIECE, result)
 
         elif type_of_required_action == MoveType.PLACE_PIECE:
-            print(MINIMAX_CHOOSE_PLACEMENT)
-            time.sleep(TIME_TO_SLEEP)
-            print_result = MINIMAX_PLACED_PIECE + str(result) + Style.RESET_ALL + SEPERATOR
+            print_result = perform_action_to_console(PLAYER_CHOOSE_PLACEMENT, MINIMAX_PLAYER,
+                                                     PLAYER_PLACED_PIECE, result)
 
         else:
-            print(MINIMAX_CHOOSE_REMOVAL)
-            time.sleep(TIME_TO_SLEEP)
-            print_result = MINIMAX_REMOVED_PIECE + str(result) + Style.RESET_ALL + SEPERATOR
+            print_result = perform_action_to_console(PLAYER_CHOOSE_REMOVAL, MINIMAX_PLAYER,
+                                                     PLAYER_REMOVED_PIECE, result)
 
         print(print_result)
         return result

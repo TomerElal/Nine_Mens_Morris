@@ -1,7 +1,8 @@
-from src import game_state
+import time
 
+from src import game_state
 from src.move import Move
-from colorama import Style
+from utils.strings import *
 
 
 def convert_move_to_action(desired_move, piece_position):
@@ -167,3 +168,11 @@ def display_board(visual_board):
     print(f"|               |               |")
     print(
         f"{visual_board[7][0].color}{visual_board[7][0].name[0]}{Style.RESET_ALL}---------------{visual_board[7][1].color}{visual_board[7][1].name[0]}{Style.RESET_ALL}---------------{visual_board[7][2].color}{visual_board[7][2].name[0]}{Style.RESET_ALL}")
+
+
+def perform_action_to_console(action_type_string, player, player_made_action_string, result):
+    print(action_type_string.format(player_name=player))
+    time.sleep(TIME_TO_SLEEP)
+    print_result = (player_made_action_string.format(player_name=player) + str(result[0])
+                    + TO_LOCATION + str(result[1]) + Style.RESET_ALL + SEPERATOR)
+    return print_result
