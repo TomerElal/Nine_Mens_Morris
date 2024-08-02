@@ -1,10 +1,9 @@
-import utils
-import strings
+from utils import strings
 
-from piece import Piece
-from game_state import GameState
-from game_state import MoveType
-from utils import move_performed_a_mill
+from src.piece import Piece
+from src.game_state import GameState
+from src.game_state import MoveType
+from utils.utils import move_performed_a_mill, display_board
 from exceptions.piece_not_exist import PieceNotExistException
 from colorama import Style
 
@@ -41,7 +40,7 @@ class Game:
     def game_loop(self):
 
         while True:
-            utils.display_board(self.game_state.board)
+            display_board(self.game_state.board)
             curr_player, other_player = self.decide_turn()
             player_color = curr_player.get_player_color()
 

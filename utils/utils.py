@@ -1,7 +1,7 @@
-import game_state
+from src import game_state
 
-from move import Move
-from colorama import Style, Fore
+from src.move import Move
+from colorama import Style
 
 
 def convert_move_to_action(desired_move, piece_position):

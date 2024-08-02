@@ -1,7 +1,7 @@
-from game_state import GameState, CellState
-from game import Game
+from src.game_state import GameState, CellState
+from src.game import Game
 from player_types.user_player import UserPlayer
-from move import MoveType
+from src.move import MoveType
 from player_types.random_player import RandomPlayer
 from player_types.minimax_player import MinimaxPlayer
 from search_agents.minimax_agent import MiniMaxAgent

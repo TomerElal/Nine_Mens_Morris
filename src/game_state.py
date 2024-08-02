@@ -1,15 +1,14 @@
 import copy
 
-from colorama import Style, Fore
+from colorama import Fore
 
-import strings
-import utils
+from utils import strings
 from exceptions.piece_not_exist import PieceNotExistException
-from move import Move, MoveType
+from src.move import Move, MoveType
 from enum import Enum
 from exceptions.uncorrelated_piece_color_exception import UnCorrelatedPieceColor
-from piece import Piece
-from utils import move_performed_a_mill
+from src.piece import Piece
+from utils.utils import move_performed_a_mill, display_board
 
 NUM_OF_ROWS = 8
 NUM_OF_COLS = 3
@@ -157,7 +156,7 @@ class GameState:
     def move_piece_when_generate_successor(self, action, curr_player, player_color, player_number):
         prev_position, new_position = action[0], action[1]
         if self.board[prev_position[0]][prev_position[1]] != player_color:
-            utils.display_board(self.board)
+            display_board(self.board)
             self.get_legal_actions(player_number)
             raise UnCorrelatedPieceColor(strings.UNCORRELATED_PIECE_COLOR_ERROR_TEMPLATE.format(
                     player_name=curr_player.name,

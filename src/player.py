@@ -1,11 +1,10 @@
-import utils
-import strings
+from utils import utils, strings
 
-from move import MoveType
+from src.move import MoveType
 from abc import ABC, abstractmethod
 from exceptions.game_phase_exception import GamePhaseException
 from exceptions.piece_not_exist import PieceNotExistException
-from game_state import NUM_OF_ROWS, NUM_OF_COLS, CellState
+from src.game_state import NUM_OF_ROWS, NUM_OF_COLS, CellState
 
 
 class Player(ABC):

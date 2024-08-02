@@ -1,6 +1,6 @@
 # exceptions/uncorrelated_piece_color_exception.py
 
-from strings import UNCORRELATED_PIECE_COLOR_DEFAULT_MESSAGE
+from utils.strings import UNCORRELATED_PIECE_COLOR_DEFAULT_MESSAGE
 
 
 class UnCorrelatedPieceColor(Exception):

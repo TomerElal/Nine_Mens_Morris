@@ -1,9 +1,9 @@
 import random
 import time
 
-from player import Player
-from move import MoveType
-from strings import *
+from src.player import Player
+from src.move import MoveType
+from utils.strings import *
 
 
 class RandomPlayer(Player):

@@ -1,7 +1,7 @@
 import numpy as np
 
 from search_agents.base_agent import Agent, AgentType
-from move import Move, MoveType
+from src.move import Move, MoveType
 
 
 class MiniMaxAgent(Agent):
