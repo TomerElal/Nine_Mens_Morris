@@ -3,6 +3,7 @@ import utils
 from move import MoveType
 from abc import ABC, abstractmethod
 from exceptions.game_phase_exception import GamePhaseException
+from exceptions.piece_not_exist import PieceNotExistException
 from game_state import NUM_OF_ROWS, NUM_OF_COLS, CellState
 
 
@@ -11,7 +12,7 @@ class Player(ABC):
         self.player_color = player_color
         self.name = name
         self.pieces_on_board = set()
-        self.curr_move_type = MoveType.PLACE_PIECE
+        self.move_type = MoveType.PLACE_PIECE
         self.num_of_pieces_left_to_place = initial_num_of_pieces
 
     @abstractmethod
@@ -28,7 +29,7 @@ class Player(ABC):
         for piece in self.pieces_on_board:
             if piece.position == position_of_desired_piece:
                 return piece
-        return None  # Means there isn't a piece with the specified location.
+        raise PieceNotExistException(f"Couldn't find a piece with the specified location {position_of_desired_piece}")
 
     def add_piece(self, piece):
         self.num_of_pieces_left_to_place -= 1
@@ -53,7 +54,7 @@ class Player(ABC):
         return (
                 (self.num_of_pieces_left_to_place == 0 and len(self.pieces_on_board) < 3)
                 or
-                (len(self.get_possible_actions(state, action_type)) == 0 and action_type == MoveType.MOVE_PIECE)
+                (action_type == MoveType.MOVE_PIECE and len(self.get_possible_actions(state, action_type)) == 0)
         )
 
     def get_possible_actions(self, state, desired_action_type=MoveType.MOVE_PIECE):
@@ -66,8 +67,10 @@ class Player(ABC):
             return self.get_possible_opponent_remove_pieces(state)
 
     def get_possible_move_pieces_actions(self, game_state):
-        if not self.curr_move_type == MoveType.MOVE_PIECE:
-            raise GamePhaseException(f"The current move type is to {self.curr_move_type.name}"
+        if not self.move_type == MoveType.MOVE_PIECE:
+            print(game_state.player1.name + " got " + str(game_state.player1.num_of_pieces_left_to_place) + " pieces left to place")
+            print(game_state.player2.name + " got " + str(game_state.player2.num_of_pieces_left_to_place) + " pieces left to place")
+            raise GamePhaseException(f"The current move type is to {self.move_type.name}"
                                      f" and the player {self.name} tried to move his piece")
 
         all_possible_actions = []
@@ -79,8 +82,8 @@ class Player(ABC):
         return all_possible_actions
 
     def get_possible_opponent_remove_pieces(self, game_state):
-        if not self.curr_move_type == MoveType.REMOVE_OPPONENT_PIECE:
-            raise GamePhaseException(f"The current move type is to {self.curr_move_type.name}"
+        if not self.move_type == MoveType.REMOVE_OPPONENT_PIECE:
+            raise GamePhaseException(f"The current move type is to {self.move_type.name}"
                                      f" and {self.name} tried to remove opponent's piece")
 
         opponent_cells = []
@@ -92,8 +95,8 @@ class Player(ABC):
         return opponent_cells
 
     def get_possible_piece_placements(self, game_state):
-        if not self.curr_move_type == MoveType.PLACE_PIECE:
-            raise GamePhaseException(f"The current move type is to {self.curr_move_type.name}"
+        if not self.move_type == MoveType.PLACE_PIECE:
+            raise GamePhaseException(f"The current move type is to {self.move_type.name}"
                                      f" and {self.name} tried to place a new piece")
 
         return game_state.get_empty_cells()

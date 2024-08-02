@@ -32,11 +32,11 @@ class Piece:
             possible_moves.append(Move.DOWN)
 
         if (Move.RIGHT in self.connections_in_board and piece_col_index < game_state.NUM_OF_COLS and
-                state.get_cell_state((piece_col_index, piece_col_index + 1)) == game_state.CellState.EMPTY):
+                state.get_cell_state((piece_row_index, piece_col_index + 1)) == game_state.CellState.EMPTY):
             possible_moves.append(Move.RIGHT)
 
         if (Move.LEFT in self.connections_in_board and piece_col_index > 0 and
-                state.get_cell_state((piece_col_index, piece_col_index - 1)) == game_state.CellState.EMPTY):
+                state.get_cell_state((piece_row_index, piece_col_index - 1)) == game_state.CellState.EMPTY):
             possible_moves.append(Move.LEFT)
 
         return possible_moves

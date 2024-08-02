@@ -1,14 +1,21 @@
 import copy
 
 from colorama import Style, Fore
+
+from exceptions.piece_not_exist import PieceNotExistException
 from move import Move, MoveType
 from enum import Enum
 from exceptions.uncorrelated_piece_color_exception import UnCorrelatedPieceColor
+from piece import Piece
+from utils import move_performed_a_mill
 
 NUM_OF_ROWS = 8
 NUM_OF_COLS = 3
 MIDDLE_ROW_LEFT_SIDE = 3
 MIDDLE_ROW_RIGHT_SIDE = 4
+PLAYER_REMOVE_ERROR_TEMPLATE = (
+    "Player {name} tried to remove opponent's piece at location {location} but there is no piece in this location"
+)
 
 
 class CellState(Enum):
@@ -66,12 +73,18 @@ def handle_board_connections_in_diagonals(connections, i):
     connections[(i, 2)] = {Move.LEFT, Move.DOWN}
 
 
+def there_are_zero_pieces_left_to_place(player1, player2):
+    return player1.num_of_pieces_left_to_place + player2.num_of_pieces_left_to_place == 0
+
+
 class GameState:
     BOARD_CONNECTIONS = initialize_board_connections()
 
-    def __init__(self, existing_board=None):
+    def __init__(self, player1, player2, curr_move_type, existing_board=None):
+        self.move_type = curr_move_type
+        self.player1 = player1
+        self.player2 = player2
         self.board = existing_board if existing_board else initialize_board()
-        self.display_board()
 
     def display_board(self):
         # Create a visual representation of the Nine Men's Morris board
@@ -114,35 +127,93 @@ class GameState:
             self.board[prev_position[0]][prev_position[1]] = CellState.EMPTY
         if new_position:
             self.board[new_position[0]][new_position[1]] = piece_color
-        self.display_board()
 
-    def generate_new_state_successor(self, action, piece_color, action_type=MoveType.MOVE_PIECE):
+    def generate_new_state_successor(self, player_number, action):
 
         prev_position, new_position = None, None
+        copy_state = copy.deepcopy(self)
+        next_move_type = self.move_type
 
-        if action_type == MoveType.MOVE_PIECE:
-            prev_position, new_position = action[0], action[1]
-            if self.board[prev_position[0]][prev_position[1]] != piece_color:
-                raise UnCorrelatedPieceColor()
+        curr_player, other_player, player_color = self.decide_player_turn_when_generate_successor(copy_state,
+                                                                                                  player_number)
 
-        if action_type == MoveType.PLACE_PIECE:
-            new_position = action
+        if self.move_type == MoveType.MOVE_PIECE:
+            new_position, prev_position = self.move_piece_when_generate_successor(action, curr_player, player_color,
+                                                                                  player_number)
 
-        if action_type == MoveType.REMOVE_OPPONENT_PIECE:
-            prev_position = action
+        if self.move_type == MoveType.PLACE_PIECE:
+            new_position, next_move_type = self.place_piece_when_generate_successor(action, copy_state, curr_player,
+                                                                                    next_move_type,
+                                                                                    other_player, player_color)
 
-        copy_current_board = copy.deepcopy(self.board)
-        new_state = GameState(existing_board=copy_current_board)
-        new_state.update_board(prev_position, new_position, piece_color)
+        if self.move_type == MoveType.REMOVE_OPPONENT_PIECE:
+            next_move_type, prev_position = self.remove_opponent_piece_when_generate_successor(action, curr_player,
+                                                                                               other_player)
+
+        new_state = GameState(copy_state.player1, copy_state.player2, next_move_type, existing_board=copy_state.board)
+        new_state.update_board(prev_position, new_position, player_color)
+
+        self.handle_new_mill_situation_after_generate_successor(curr_player, new_position, new_state, player_color)
+
         return new_state
+
+    def handle_new_mill_situation_after_generate_successor(self, curr_player, new_position, new_state, player_color):
+        if new_position and move_performed_a_mill(new_position, new_state, player_color):
+            new_state.move_type = MoveType.REMOVE_OPPONENT_PIECE
+            curr_player.move_type = MoveType.REMOVE_OPPONENT_PIECE
+
+    def remove_opponent_piece_when_generate_successor(self, action, curr_player, other_player):
+        prev_position = action
+        if not other_player.remove_piece(prev_position):
+            raise PieceNotExistException(PLAYER_REMOVE_ERROR_TEMPLATE.format(
+                name=curr_player.name,
+                location=prev_position
+            ))
+        next_move_type = curr_player.move_type = MoveType.MOVE_PIECE \
+            if there_are_zero_pieces_left_to_place(curr_player, other_player) else MoveType.PLACE_PIECE
+        return next_move_type, prev_position
+
+    def place_piece_when_generate_successor(self, action, copy_state, curr_player, next_move_type,
+                                            other_player, player_color):
+        new_position = action
+        player_new_piece = Piece(player_color, new_position,
+                                 self.BOARD_CONNECTIONS[new_position])
+        curr_player.add_piece(player_new_piece)
+        if there_are_zero_pieces_left_to_place(curr_player, other_player):
+            next_move_type = copy_state.player1.move_type = copy_state.player2.move_type = MoveType.MOVE_PIECE
+        return new_position, next_move_type
+
+    def move_piece_when_generate_successor(self, action, curr_player, player_color, player_number):
+        prev_position, new_position = action[0], action[1]
+        if self.board[prev_position[0]][prev_position[1]] != player_color:
+            self.display_board()
+            self.get_legal_actions(player_number)
+            raise UnCorrelatedPieceColor(
+                f"{curr_player.name} asked to move his piece (in {player_color.name} color) at location"
+                f" ({prev_position[0]}, {prev_position[1]}), but the color there is"
+                f" {(self.board[prev_position[0]][prev_position[1]]).name}.")
+        curr_player.move_piece(prev_position, new_position, self.BOARD_CONNECTIONS[new_position])
+        return new_position, prev_position
+
+    def decide_player_turn_when_generate_successor(self, copy_state, player_number):
+        if player_number == 1:
+            curr_player = copy_state.player1
+            other_player = copy_state.player2
+        else:
+            curr_player = copy_state.player2
+            other_player = copy_state.player1
+        player_color = curr_player.get_player_color()
+        return curr_player, other_player, player_color
 
     def get_cell_state(self, location):
         return self.board[location[0]][location[1]]
 
+    def is_game_over(self):
+        return (self.player1.is_lost_game(self, self.move_type)
+                or
+                self.player2.is_lost_game(self, self.move_type))
 
-# Example usage
-if __name__ == "__main__":
-    board = GameState()
-    board.display_board()
-    board.update_board((0, 0), (0, 1), CellState.BLUE)
-    board.update_board((0, 0), (1, 1), CellState.GREEN)
+    def get_legal_actions(self, player_number):
+        if player_number == 1:
+            return self.player1.get_possible_actions(self, self.move_type)
+        return self.player2.get_possible_actions(self, self.move_type)
