@@ -1,32 +1,6 @@
 from player import Player
 from move import MoveType
-from colorama import Style, Fore
-
-SEPERATOR = "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-
-INSERT_PIECE_INDEX_TO_MOVE = ("Choose a piece of yours to move.\nInsert it's index by the format [num_row][num_column]."
-                              "\nFor example, if you want to move a piece that placed in row number 5 and"
-                              " column number 2, insert: 52\n📝️ Your Choice 👉🏻:  ")
-INSERT_PIECE_NEW_INDEX = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                          "Now choose a new place for your piece."
-                          + Style.RESET_ALL + SEPERATOR +
-                          "Insert it's index by the format [num_row][num_column]."
-                          "\nFor example, if you want to move a piece to a placed in row number 3 and"
-                          " column number 1, insert: 31\n📝️ Your Choice 👉🏻:  ")
-CHOOSE_NEW_PIECE_PLACEMENT = (
-    "Choose a placement for your piece.\nInsert it's index by the format [num_row][num_column]."
-    "\nFor example, if you want to place the piece in row number 7 and column number 2, insert: 72\n"
-    "📝️ Your Choice 👉🏻:  ")
-CHOOSE_OPPONENT_PIECE_TO_REMOVE = (SEPERATOR + Fore.LIGHTYELLOW_EX +
-                                   "🚀🚀 Choose an index of opponent's piece to remove! 🚀🚀"
-                                   + Style.RESET_ALL + SEPERATOR +
-                                   "Insert the index by the format [num_row][num_column]."
-                                   "\nFor example, if you want to remove a piece from row number 2 and"
-                                   " column number 1, insert: 21\n📝️ Your Choice 👉🏻:  ")
-INVALID_INPUT_FORMAT = (SEPERATOR + Fore.LIGHTCYAN_EX + "You have entered an invalid index format. Try again!" +
-                        Style.RESET_ALL + SEPERATOR)
-INVALID_INDEX = (SEPERATOR + Fore.LIGHTCYAN_EX + "The index you've entered is invalid. Try again!" +
-                 Style.RESET_ALL + SEPERATOR)
+from strings import *
 
 
 def get_valid_input(prompt, validation_func, validation_list, prev_input=None, empty_cells=None):
@@ -102,7 +76,11 @@ class UserPlayer(Player):
     def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE):
 
         possible_actions = self.get_possible_actions(state, type_of_required_action)
-        greeting = self.player_color.color + f"\n{self.name} " + Style.RESET_ALL + "it's your turn ! 😎\n"
+        greeting = PLAYER_TURN_GREETING_TEMPLATE.format(
+            color=self.player_color.color,
+            name=self.name,
+            reset=Style.RESET_ALL
+        )
         empty_cells = state.get_empty_cells()
         if type_of_required_action == MoveType.MOVE_PIECE:
             chosen_piece_index_to_move = get_valid_input(greeting + INSERT_PIECE_INDEX_TO_MOVE,

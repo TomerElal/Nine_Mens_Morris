@@ -52,6 +52,6 @@ class MiniMaxAgent(Agent):
                 return min_val, action_result
 
         start_depth = 0
-        # if game_state.move_type == MoveType.REMOVE_OPPONENT_PIECE:
-        #     start_depth = 1
+        if game_state.move_type == MoveType.REMOVE_OPPONENT_PIECE:
+            start_depth = 1
         return minimax(AgentType.MAX, game_state, start_depth)[1]

@@ -1,5 +1,7 @@
 import game_state
+
 from move import Move
+from colorama import Style, Fore
 
 
 def convert_move_to_action(desired_move, piece_position):
@@ -137,3 +139,31 @@ def compute_adjacent_cell_pos(given_location, direction=Move.UP):
         if given_location[0] == 4:
             return 5 + given_location[1], game_state.NUM_OF_COLS - 1
         return given_location[0] + 1, given_location[1]
+
+
+def display_board(visual_board):
+    # Create a visual representation of the Nine Men's Morris board
+    print()
+    print("#####################################################################################################")
+    print()
+    # Display the board with connections
+    print(
+        f"{visual_board[0][0].color}{visual_board[0][0].name[0]}{Style.RESET_ALL}---------------{visual_board[0][1].color}{visual_board[0][1].name[0]}{Style.RESET_ALL}---------------{visual_board[0][2].color}{visual_board[0][2].name[0]}{Style.RESET_ALL}")
+    print(f"|               |               |")
+    print(
+        f"|   {visual_board[1][0].color}{visual_board[1][0].name[0]}{Style.RESET_ALL}-----------{visual_board[1][1].color}{visual_board[1][1].name[0]}{Style.RESET_ALL}-----------{visual_board[1][2].color}{visual_board[1][2].name[0]}{Style.RESET_ALL}   |")
+    print(f"|   |           |           |   |")
+    print(
+        f"|   |   {visual_board[2][0].color}{visual_board[2][0].name[0]}{Style.RESET_ALL}-------{visual_board[2][1].color}{visual_board[2][1].name[0]}{Style.RESET_ALL}-------{visual_board[2][2].color}{visual_board[2][2].name[0]}{Style.RESET_ALL}   |   |")
+    print(f"|   |   |               |   |   |")
+    print(
+        f"{visual_board[3][0].color}{visual_board[3][0].name[0]}{Style.RESET_ALL}---{visual_board[3][1].color}{visual_board[3][1].name[0]}{Style.RESET_ALL}---{visual_board[3][2].color}{visual_board[3][2].name[0]}{Style.RESET_ALL}               {visual_board[4][0].color}{visual_board[4][0].name[0]}{Style.RESET_ALL}---{visual_board[4][1].color}{visual_board[4][1].name[0]}{Style.RESET_ALL}---{visual_board[4][2].color}{visual_board[4][2].name[0]}{Style.RESET_ALL}")
+    print(f"|   |   |               |   |   |")
+    print(
+        f"|   |   {visual_board[5][0].color}{visual_board[5][0].name[0]}{Style.RESET_ALL}-------{visual_board[5][1].color}{visual_board[5][1].name[0]}{Style.RESET_ALL}-------{visual_board[5][2].color}{visual_board[5][2].name[0]}{Style.RESET_ALL}   |   |")
+    print(f"|   |           |           |   |")
+    print(
+        f"|   {visual_board[6][0].color}{visual_board[6][0].name[0]}{Style.RESET_ALL}-----------{visual_board[6][1].color}{visual_board[6][1].name[0]}{Style.RESET_ALL}-----------{visual_board[6][2].color}{visual_board[6][2].name[0]}{Style.RESET_ALL}   |")
+    print(f"|               |               |")
+    print(
+        f"{visual_board[7][0].color}{visual_board[7][0].name[0]}{Style.RESET_ALL}---------------{visual_board[7][1].color}{visual_board[7][1].name[0]}{Style.RESET_ALL}---------------{visual_board[7][2].color}{visual_board[7][2].name[0]}{Style.RESET_ALL}")

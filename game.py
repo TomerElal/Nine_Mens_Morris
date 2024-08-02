@@ -1,3 +1,6 @@
+import utils
+import strings
+
 from piece import Piece
 from game_state import GameState
 from game_state import MoveType
@@ -25,7 +28,12 @@ class Game:
     def run(self):
         self.game_loop()
         winner = self.get_game_result()
-        print("\n🔶🔷🔶 " + winner.player_color.color + f"The Winner is {winner.name} " + Style.RESET_ALL + "🔶🔷🔶\n\n")
+        announcement = strings.WINNER_ANNOUNCEMENT_TEMPLATE.format(
+            color=winner.player_color.color,
+            name=winner.name,
+            reset=Style.RESET_ALL
+        )
+        print(announcement)
 
     def quit(self):
         pass
@@ -33,7 +41,7 @@ class Game:
     def game_loop(self):
 
         while True:
-            self.game_state.display_board()
+            utils.display_board(self.game_state.board)
             curr_player, other_player = self.decide_turn()
             player_color = curr_player.get_player_color()
 

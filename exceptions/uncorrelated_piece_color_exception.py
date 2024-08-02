@@ -1,6 +1,9 @@
 # exceptions/uncorrelated_piece_color_exception.py
 
+from strings import UNCORRELATED_PIECE_COLOR_DEFAULT_MESSAGE
+
+
 class UnCorrelatedPieceColor(Exception):
-    def __init__(self, message="The piece color does not match the expected color"):
+    def __init__(self, message=UNCORRELATED_PIECE_COLOR_DEFAULT_MESSAGE):
         self.message = message
         super().__init__(self.message)

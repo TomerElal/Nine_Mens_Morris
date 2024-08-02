@@ -2,6 +2,8 @@ import copy
 
 from colorama import Style, Fore
 
+import strings
+import utils
 from exceptions.piece_not_exist import PieceNotExistException
 from move import Move, MoveType
 from enum import Enum
@@ -13,9 +15,6 @@ NUM_OF_ROWS = 8
 NUM_OF_COLS = 3
 MIDDLE_ROW_LEFT_SIDE = 3
 MIDDLE_ROW_RIGHT_SIDE = 4
-PLAYER_REMOVE_ERROR_TEMPLATE = (
-    "Player {name} tried to remove opponent's piece at location {location} but there is no piece in this location"
-)
 
 
 class CellState(Enum):
@@ -86,34 +85,6 @@ class GameState:
         self.player2 = player2
         self.board = existing_board if existing_board else initialize_board()
 
-    def display_board(self):
-        # Create a visual representation of the Nine Men's Morris board
-        visual_board = self.board
-        print()
-        print("#####################################################################################################")
-        print()
-        # Display the board with connections
-        print(
-            f"{visual_board[0][0].color}{visual_board[0][0].name[0]}{Style.RESET_ALL}---------------{visual_board[0][1].color}{visual_board[0][1].name[0]}{Style.RESET_ALL}---------------{visual_board[0][2].color}{visual_board[0][2].name[0]}{Style.RESET_ALL}")
-        print(f"|               |               |")
-        print(
-            f"|   {visual_board[1][0].color}{visual_board[1][0].name[0]}{Style.RESET_ALL}-----------{visual_board[1][1].color}{visual_board[1][1].name[0]}{Style.RESET_ALL}-----------{visual_board[1][2].color}{visual_board[1][2].name[0]}{Style.RESET_ALL}   |")
-        print(f"|   |           |           |   |")
-        print(
-            f"|   |   {visual_board[2][0].color}{visual_board[2][0].name[0]}{Style.RESET_ALL}-------{visual_board[2][1].color}{visual_board[2][1].name[0]}{Style.RESET_ALL}-------{visual_board[2][2].color}{visual_board[2][2].name[0]}{Style.RESET_ALL}   |   |")
-        print(f"|   |   |               |   |   |")
-        print(
-            f"{visual_board[3][0].color}{visual_board[3][0].name[0]}{Style.RESET_ALL}---{visual_board[3][1].color}{visual_board[3][1].name[0]}{Style.RESET_ALL}---{visual_board[3][2].color}{visual_board[3][2].name[0]}{Style.RESET_ALL}               {visual_board[4][0].color}{visual_board[4][0].name[0]}{Style.RESET_ALL}---{visual_board[4][1].color}{visual_board[4][1].name[0]}{Style.RESET_ALL}---{visual_board[4][2].color}{visual_board[4][2].name[0]}{Style.RESET_ALL}")
-        print(f"|   |   |               |   |   |")
-        print(
-            f"|   |   {visual_board[5][0].color}{visual_board[5][0].name[0]}{Style.RESET_ALL}-------{visual_board[5][1].color}{visual_board[5][1].name[0]}{Style.RESET_ALL}-------{visual_board[5][2].color}{visual_board[5][2].name[0]}{Style.RESET_ALL}   |   |")
-        print(f"|   |           |           |   |")
-        print(
-            f"|   {visual_board[6][0].color}{visual_board[6][0].name[0]}{Style.RESET_ALL}-----------{visual_board[6][1].color}{visual_board[6][1].name[0]}{Style.RESET_ALL}-----------{visual_board[6][2].color}{visual_board[6][2].name[0]}{Style.RESET_ALL}   |")
-        print(f"|               |               |")
-        print(
-            f"{visual_board[7][0].color}{visual_board[7][0].name[0]}{Style.RESET_ALL}---------------{visual_board[7][1].color}{visual_board[7][1].name[0]}{Style.RESET_ALL}---------------{visual_board[7][2].color}{visual_board[7][2].name[0]}{Style.RESET_ALL}")
-
     def get_empty_cells(self):
         empty_cells = []
         for row in range(NUM_OF_ROWS):
@@ -165,7 +136,7 @@ class GameState:
     def remove_opponent_piece_when_generate_successor(self, action, curr_player, other_player):
         prev_position = action
         if not other_player.remove_piece(prev_position):
-            raise PieceNotExistException(PLAYER_REMOVE_ERROR_TEMPLATE.format(
+            raise PieceNotExistException(strings.PLAYER_REMOVE_ERROR_TEMPLATE.format(
                 name=curr_player.name,
                 location=prev_position
             ))
@@ -186,12 +157,15 @@ class GameState:
     def move_piece_when_generate_successor(self, action, curr_player, player_color, player_number):
         prev_position, new_position = action[0], action[1]
         if self.board[prev_position[0]][prev_position[1]] != player_color:
-            self.display_board()
+            utils.display_board(self.board)
             self.get_legal_actions(player_number)
-            raise UnCorrelatedPieceColor(
-                f"{curr_player.name} asked to move his piece (in {player_color.name} color) at location"
-                f" ({prev_position[0]}, {prev_position[1]}), but the color there is"
-                f" {(self.board[prev_position[0]][prev_position[1]]).name}.")
+            raise UnCorrelatedPieceColor(strings.UNCORRELATED_PIECE_COLOR_ERROR_TEMPLATE.format(
+                    player_name=curr_player.name,
+                    player_color=player_color.name,
+                    prev_row=prev_position[0],
+                    prev_col=prev_position[1],
+                    actual_color=(self.board[prev_position[0]][prev_position[1]]).name
+                ))
         curr_player.move_piece(prev_position, new_position, self.BOARD_CONNECTIONS[new_position])
         return new_position, prev_position
 

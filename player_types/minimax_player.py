@@ -2,23 +2,7 @@ import time
 
 from player import Player
 from move import MoveType
-from colorama import Style, Fore
-
-SEPERATOR = "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-MINIMAX_CHOOSE_MOVEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                           "\nIt's time for the Minimax Player to move a piece.\n"
-                           + Style.RESET_ALL + SEPERATOR)
-MINIMAX_CHOOSE_PLACEMENT = (SEPERATOR + Fore.LIGHTMAGENTA_EX +
-                            "\nIt's time for the Minimax Player choose a place for new piece.\n"
-                            + Style.RESET_ALL + SEPERATOR)
-MINIMAX_CHOOSE_REMOVAL = (SEPERATOR + Fore.LIGHTYELLOW_EX +
-                          "\n🚀🚀 It's time for the Minimax Player to remove opponent's piece! 🚀🚀\n"
-                          + Style.RESET_ALL + SEPERATOR)
-MINIMAX_MOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to move piece from location "
-MINIMAX_PLACED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to place a piece at location "
-MINIMAX_REMOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "Minimax Player chose to remove opponent's piece from location "
-TO_LOCATION = " to location "
-TIME_TO_SLEEP = 0
+from strings import *
 
 
 class MinimaxPlayer(Player):
