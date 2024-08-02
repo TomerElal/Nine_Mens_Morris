@@ -102,3 +102,10 @@ INVALID_INDEX = (SEPERATOR + Fore.LIGHTCYAN_EX + "The index you've entered is in
 
 PLAYER_TURN_GREETING_TEMPLATE = "{color}\n{name} {reset} it's your turn! 😎\n"
 
+RANDOM_PLAYER = "Random Player"
+
+MINIMAX_PLAYER = "Minimax Player"
+
+PLAYER2 = "Player 2"
+
+PLAYER1 = "Player 1"

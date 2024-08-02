@@ -5,14 +5,7 @@ from src.move import MoveType
 from player_types.random_player import RandomPlayer
 from player_types.minimax_player import MinimaxPlayer
 from search_agents.minimax_agent import MiniMaxAgent
-
-RANDOM_PLAYER = "Random Player"
-
-MINIMAX_PLAYER = "Minimax Player"
-
-PLAYER2 = "Player 2"
-
-PLAYER1 = "Player 1"
+from utils.strings import *
 
 NUM_OF_PIECES = 9
 
