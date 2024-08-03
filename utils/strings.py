@@ -82,13 +82,15 @@ INVALID_INPUT_FORMAT = (SEPERATOR + Fore.LIGHTCYAN_EX + "You have entered an inv
 INVALID_INDEX = (SEPERATOR + Fore.LIGHTCYAN_EX + "The index you've entered is invalid. Try again!" +
                  Style.RESET_ALL + SEPERATOR)
 
-PLAYER_TURN_GREETING_TEMPLATE = "{color}\n{name} {reset} it's your turn! 😎\n"
+PLAYER_TURN_GREETING_TEMPLATE = "{color}\n{name} {reset}it's your turn! 😎\n"
 
 RANDOM_PLAYER = "Random Player"
 
 MINIMAX_PLAYER = "Minimax Player"
 
 EXPECTIMAX_PLAYER = "Expectimax Player"
+
+ALPHA_BETA_PLAYER = "AlphaBeta Player"
 
 PLAYER2 = "Player 2"
 

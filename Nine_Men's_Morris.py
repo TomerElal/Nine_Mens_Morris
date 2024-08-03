@@ -3,10 +3,10 @@ from src.game import Game
 from player_types.user_player import UserPlayer
 from src.move import MoveType
 from player_types.random_player import RandomPlayer
-from player_types.minimax_player import MinimaxPlayer
+from player_types.multi_agents_player import MultiAgentsPlayer
 from search_agents.minimax_agent import MiniMaxAgent
-from player_types.expectimax_player import ExpectimaxPlayer
 from search_agents.expectimax_agent import ExpectiMaxAgent
+from search_agents.alpha_beta_pruning import AlphaBetaAgent
 from utils.strings import *
 
 NUM_OF_PIECES = 9
@@ -34,14 +34,17 @@ class GameManager:
 
 def main():
 
+    tomer = UserPlayer("Tomer", NUM_OF_PIECES, CellState.BLUE)
     user_player1 = UserPlayer(PLAYER1, NUM_OF_PIECES, CellState.GREEN)
     user_player2 = UserPlayer(PLAYER2, NUM_OF_PIECES, CellState.BLUE)
 
     expectimax_agent = ExpectiMaxAgent()
-    expectimax_player = ExpectimaxPlayer(EXPECTIMAX_PLAYER, NUM_OF_PIECES, CellState.GREEN, expectimax_agent)
+    minimax_agent = MiniMaxAgent()
+    alpha_beta_agent = AlphaBetaAgent()
+    multi_agents_player = MultiAgentsPlayer(ALPHA_BETA_PLAYER, NUM_OF_PIECES, CellState.GREEN, alpha_beta_agent)
     random_player = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.BLUE)
 
-    game_manager = GameManager(player_1=expectimax_player, player_2=random_player)
+    game_manager = GameManager(player_1=multi_agents_player, player_2=tomer)
     game_manager.start_game()
 
 

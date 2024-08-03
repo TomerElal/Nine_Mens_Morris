@@ -170,9 +170,19 @@ def display_board(visual_board):
         f"{visual_board[7][0].color}{visual_board[7][0].name[0]}{Style.RESET_ALL}---------------{visual_board[7][1].color}{visual_board[7][1].name[0]}{Style.RESET_ALL}---------------{visual_board[7][2].color}{visual_board[7][2].name[0]}{Style.RESET_ALL}")
 
 
-def perform_action_to_console(action_type_string, player, player_made_action_string, result):
-    print(action_type_string.format(player_name=player))
-    time.sleep(TIME_TO_SLEEP)
+def perform_placement_or_remove_action_to_console(action_type_string, player, player_made_action_string, result):
+    print_and_sleep(to_print=action_type_string.format(player_name=player))
+    print_result = (player_made_action_string.format(player_name=player) + str(result) + Style.RESET_ALL + SEPERATOR)
+    return print_result
+
+
+def perform_move_action_to_console(action_type_string, player, player_made_action_string, result):
+    print_and_sleep(to_print=action_type_string.format(player_name=player))
     print_result = (player_made_action_string.format(player_name=player) + str(result[0])
                     + TO_LOCATION + str(result[1]) + Style.RESET_ALL + SEPERATOR)
     return print_result
+
+
+def print_and_sleep(to_print):
+    print(to_print)
+    time.sleep(TIME_TO_SLEEP)

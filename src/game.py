@@ -64,7 +64,7 @@ class Game:
                 name=curr_player.name,
                 location=opponent_remove_location
             ))
-        self.game_state.update_board(prev_position=opponent_remove_location, piece_color=player_color)
+        self.game_state.update_board(prev_position=opponent_remove_location)
         self.current_move_type = self.prev_move_type
         curr_player.move_type = self.prev_move_type
         self.game_state.move_type = self.prev_move_type
