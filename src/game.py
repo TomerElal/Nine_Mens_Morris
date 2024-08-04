@@ -51,13 +51,13 @@ class Game:
                 self.play_turn_of_piece_movement(curr_player, player_color)
 
             else:  # Case of MoveType.REMOVE_OPPONENT_PIECE
-                self.play_turn_of_piece_removal(curr_player, other_player, player_color)
+                self.play_turn_of_piece_removal(curr_player, other_player)
 
             if other_player.is_lost_game(self.game_state, self.current_move_type):
                 self.winner = curr_player
                 break
 
-    def play_turn_of_piece_removal(self, curr_player, other_player, player_color):
+    def play_turn_of_piece_removal(self, curr_player, other_player):
         opponent_remove_location = curr_player.get_action(self.game_state, MoveType.REMOVE_OPPONENT_PIECE)
         if not other_player.remove_piece(opponent_remove_location):
             raise PieceNotExistException(PLAYER_REMOVE_ERROR_TEMPLATE.format(
@@ -71,8 +71,8 @@ class Game:
 
     def play_turn_of_piece_movement(self, curr_player, player_color):
         prev_pos, new_pos = curr_player.get_action(self.game_state, MoveType.MOVE_PIECE)
-        curr_player.move_piece(position_of_desired_piece_to_move=prev_pos,
-                               new_position=new_pos, new_connections=self.board_connections[new_pos])
+        curr_player.handle_piece_movement_action(position_of_desired_piece_to_move=prev_pos,
+                                                 new_position=new_pos, new_connections=self.board_connections[new_pos])
         self.game_state.update_board(prev_position=prev_pos, new_position=new_pos, piece_color=player_color)
         if move_performed_a_mill(new_pos, self.game_state, player_color):
             self.player_1_turn = not self.player_1_turn  # We need the same player to play in the next turn.

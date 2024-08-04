@@ -4,6 +4,30 @@ from src import game_state
 from src.move import Move
 from utils.strings import *
 
+WINDOW_SIZE = (1000, 700)
+
+# Board dimensions
+BOARD_SIZE = 600
+BOARD_OFFSET_X = (WINDOW_SIZE[0] - BOARD_SIZE) // 2
+BOARD_OFFSET_Y = (WINDOW_SIZE[1] - BOARD_SIZE) // 2
+POSITIONS = [
+    [(BOARD_OFFSET_X, BOARD_OFFSET_Y), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y), (BOARD_OFFSET_X + 600, BOARD_OFFSET_Y)],
+    [(BOARD_OFFSET_X + 100, BOARD_OFFSET_Y + 100), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y + 100),
+     (BOARD_OFFSET_X + 500, BOARD_OFFSET_Y + 100)],
+    [(BOARD_OFFSET_X + 200, BOARD_OFFSET_Y + 200), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y + 200),
+     (BOARD_OFFSET_X + 400, BOARD_OFFSET_Y + 200)],
+    [(BOARD_OFFSET_X, BOARD_OFFSET_Y + 300), (BOARD_OFFSET_X + 100, BOARD_OFFSET_Y + 300),
+     (BOARD_OFFSET_X + 200, BOARD_OFFSET_Y + 300)],
+    [(BOARD_OFFSET_X + 400, BOARD_OFFSET_Y + 300), (BOARD_OFFSET_X + 500, BOARD_OFFSET_Y + 300),
+     (BOARD_OFFSET_X + 600, BOARD_OFFSET_Y + 300)],
+    [(BOARD_OFFSET_X + 200, BOARD_OFFSET_Y + 400), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y + 400),
+     (BOARD_OFFSET_X + 400, BOARD_OFFSET_Y + 400)],
+    [(BOARD_OFFSET_X + 100, BOARD_OFFSET_Y + 500), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y + 500),
+     (BOARD_OFFSET_X + 500, BOARD_OFFSET_Y + 500)],
+    [(BOARD_OFFSET_X, BOARD_OFFSET_Y + 600), (BOARD_OFFSET_X + 300, BOARD_OFFSET_Y + 600),
+     (BOARD_OFFSET_X + 600, BOARD_OFFSET_Y + 600)]
+]
+
 
 def convert_move_to_action(desired_move, piece_position):
     piece_row_position = piece_position[0]
@@ -186,3 +210,16 @@ def perform_move_action_to_console(action_type_string, player, player_made_actio
 def print_and_sleep(to_print):
     print(to_print)
     time.sleep(TIME_TO_SLEEP)
+
+
+def convert_piece_moves_to_player_actions(moves, piece_position=None):
+    actions = []
+    for move in moves:
+        correlated_action = convert_move_to_action(desired_move=move, piece_position=piece_position)
+        actions.append((piece_position, correlated_action))
+
+    return actions
+
+
+def get_piece_position_in_gui(row, col):
+    return POSITIONS[row][col]

@@ -13,4 +13,6 @@ class MoveType(Enum):
     PLACE_PIECE = 1
     MOVE_PIECE = 2
     REMOVE_OPPONENT_PIECE = 3
+    SELECT_PIECE_TO_MOVE = 4
+    MOVE_SELECTED_PIECE = 5
 

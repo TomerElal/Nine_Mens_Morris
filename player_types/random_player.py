@@ -8,7 +8,7 @@ from utils.utils import perform_placement_or_remove_action_to_console, perform_m
 
 class RandomPlayer(Player):
 
-    def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE):
+    def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE, events=None):
 
         if type_of_required_action == MoveType.MOVE_PIECE:
             result = random.choice(self.get_possible_move_pieces_actions(game_state=state))

@@ -12,7 +12,7 @@ class MultiAgentsPlayer(Player):
         super().__init__(name, initial_num_of_pieces, player_color)
         self.search_agent = agent
 
-    def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE):
+    def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE, events=None):
 
         result = self.search_agent.get_action(state)
 

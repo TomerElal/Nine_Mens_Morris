@@ -30,8 +30,7 @@ def validate_input_of_piece_to_move(user_input, possible_move_actions, prev_inpu
         return False, INVALID_INPUT_FORMAT
 
     piece_index_to_move = tuple(int(char) for char in user_input)
-    all_existed_pieces_indexes = set([action[0] for action in possible_move_actions])
-    if piece_index_to_move in all_existed_pieces_indexes:
+    if piece_index_to_move in possible_move_actions:
         return True, piece_index_to_move
 
     return False, INVALID_INDEX
@@ -71,7 +70,7 @@ def validate_input_of_opponent_piece_removal(user_input, opponent_cells_list, pr
     return False, INVALID_INDEX
 
 
-class UserPlayer(Player):
+class ConsoleUserPlayer(Player):
 
     def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE):
 
@@ -85,7 +84,7 @@ class UserPlayer(Player):
         if type_of_required_action == MoveType.MOVE_PIECE:
             chosen_piece_index_to_move = get_valid_input(greeting + INSERT_PIECE_INDEX_TO_MOVE,
                                                          validate_input_of_piece_to_move,
-                                                         possible_actions)
+                                                         self.get_all_pieces_positions())
             chosen_new_piece_place = get_valid_input(INSERT_PIECE_NEW_INDEX, validate_input_of_piece_new_place,
                                                      possible_actions, chosen_piece_index_to_move, empty_cells)
             return chosen_piece_index_to_move, chosen_new_piece_place

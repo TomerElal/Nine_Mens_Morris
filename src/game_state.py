@@ -19,6 +19,8 @@ class CellState(Enum):
     EMPTY = 0
     BLUE = 1
     GREEN = 2
+    BLACK = 3
+    WHITE = 4
 
     @property
     def color(self):
@@ -153,7 +155,10 @@ class GameState:
         return new_position, next_move_type
 
     def move_piece_when_generate_successor(self, action, curr_player, player_color, player_number):
-        prev_position, new_position = action[0], action[1]
+        try:
+            prev_position, new_position = action[0], action[1]
+        except Exception as e:
+            print(e)
         if self.board[prev_position[0]][prev_position[1]] != player_color:
             display_board(self.board)
             self.get_legal_actions(player_number)
@@ -164,7 +169,7 @@ class GameState:
                     prev_col=prev_position[1],
                     actual_color=(self.board[prev_position[0]][prev_position[1]]).name
                 ))
-        curr_player.move_piece(prev_position, new_position, self.BOARD_CONNECTIONS[new_position])
+        curr_player.handle_piece_movement_action(prev_position, new_position, self.BOARD_CONNECTIONS[new_position])
         return new_position, prev_position
 
     def decide_player_turn_when_generate_successor(self, copy_state, player_number):
