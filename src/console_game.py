@@ -5,14 +5,10 @@ from src.game_state import GameState
 from src.game_state import MoveType
 from utils.utils import move_performed_a_mill, display_board
 from exceptions.piece_not_exist import PieceNotExistException
-from colorama import Style
-
-PLAYER_REMOVE_ERROR_TEMPLATE = (
-    "Player {name} tried to remove opponent's piece at location {location} but there is no piece in this location"
-)
+from colorama import Style, Fore
 
 
-class Game:
+class ConsoleGame:
     def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game):
         self.num_of_pieces_left_to_provide = num_of_initial_pieces * 2
         self.player_1 = player_1
@@ -27,12 +23,18 @@ class Game:
     def run(self):
         self.game_loop()
         winner = self.get_game_result()
-        announcement = strings.WINNER_ANNOUNCEMENT_TEMPLATE.format(
+        winner_announcement = strings.WINNER_ANNOUNCEMENT_TEMPLATE.format(
             color=winner.player_color.color,
             name=winner.name,
             reset=Style.RESET_ALL
         )
-        print(announcement)
+        win_score = strings.RESULT.format(
+            color=Fore.LIGHTYELLOW_EX,
+            num_pieces_left=winner.get_num_of_pieces_on_board(),
+            reset=Style.RESET_ALL,
+            other_color=winner.player_color.color
+        )
+        print(winner_announcement + '\n' + win_score)
 
     def quit(self):
         pass
@@ -60,7 +62,7 @@ class Game:
     def play_turn_of_piece_removal(self, curr_player, other_player):
         opponent_remove_location = curr_player.get_action(self.game_state, MoveType.REMOVE_OPPONENT_PIECE)
         if not other_player.remove_piece(opponent_remove_location):
-            raise PieceNotExistException(PLAYER_REMOVE_ERROR_TEMPLATE.format(
+            raise PieceNotExistException(strings.PLAYER_REMOVE_ERROR_TEMPLATE.format(
                 name=curr_player.name,
                 location=opponent_remove_location
             ))

@@ -8,8 +8,8 @@ from utils.utils import perform_placement_or_remove_action_to_console, perform_m
 
 class MultiAgentsPlayer(Player):
 
-    def __init__(self, name, initial_num_of_pieces, player_color, agent):
-        super().__init__(name, initial_num_of_pieces, player_color)
+    def __init__(self, name, initial_num_of_pieces, player_color, agent, is_computer_player):
+        super().__init__(name, initial_num_of_pieces, player_color, is_computer_player)
         self.search_agent = agent
 
     def get_action(self, state, type_of_required_action=MoveType.MOVE_PIECE, events=None):

@@ -28,6 +28,8 @@ class CellState(Enum):
             return Fore.LIGHTBLUE_EX
         elif self == CellState.GREEN:
             return Fore.LIGHTGREEN_EX
+        elif self == CellState.WHITE:
+            return Fore.LIGHTWHITE_EX
         else:
             return Fore.LIGHTBLACK_EX
 
@@ -158,7 +160,7 @@ class GameState:
         try:
             prev_position, new_position = action[0], action[1]
         except Exception as e:
-            print(e)
+            raise Exception(e)
         if self.board[prev_position[0]][prev_position[1]] != player_color:
             display_board(self.board)
             self.get_legal_actions(player_number)

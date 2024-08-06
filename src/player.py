@@ -8,7 +8,9 @@ from src.game_state import NUM_OF_ROWS, NUM_OF_COLS, CellState
 
 
 class Player(ABC):
-    def __init__(self, name, initial_num_of_pieces, player_color):
+    def __init__(self, name, initial_num_of_pieces, player_color, is_computer_player, is_gui_game=False):
+        self.is_gui_game = is_gui_game
+        self.is_computer_player = is_computer_player
         self.player_color = player_color
         self.name = name
         self.pieces_on_board = set()
@@ -54,7 +56,7 @@ class Player(ABC):
 
     def is_lost_game(self, state, action_type=MoveType.MOVE_PIECE):
         return (
-                (self.num_of_pieces_left_to_place == 0 and len(self.pieces_on_board) < 1)
+                (self.num_of_pieces_left_to_place == 0 and len(self.pieces_on_board) < 3)
                 or
                 (action_type == MoveType.MOVE_PIECE and len(self.get_possible_actions(state, action_type)) == 0)
         )
@@ -68,14 +70,20 @@ class Player(ABC):
         if desired_action_type == MoveType.REMOVE_OPPONENT_PIECE:
             return self.get_possible_opponent_remove_pieces(state)
         if desired_action_type == MoveType.SELECT_PIECE_TO_MOVE:
-            return self.get_all_pieces_positions()
+            return self.get_all_pieces_positions(state)
         if desired_action_type == MoveType.MOVE_SELECTED_PIECE:
-            player_move_actions = utils.convert_piece_moves_to_player_actions(selected_piece.get_possible_moves(state), selected_piece.position)
-            possible_positions_to_move = [action[1] for action in player_move_actions]
-            return possible_positions_to_move
+            return self.get_all_valid_locations_to_move_to(selected_piece, state)
+
+    def get_all_valid_locations_to_move_to(self, selected_piece, state):
+        player_move_actions = utils.convert_piece_moves_to_player_actions(selected_piece.get_possible_moves(state),
+                                                                          selected_piece.position)
+        possible_positions_to_move = [action[1] for action in player_move_actions]
+        return possible_positions_to_move
 
     def get_possible_move_pieces_actions(self, game_state):
-        if not self.move_type == MoveType.MOVE_PIECE:
+        if not (self.move_type == MoveType.MOVE_PIECE
+                or self.move_type == MoveType.SELECT_PIECE_TO_MOVE
+                or self.move_type == MoveType.MOVE_SELECTED_PIECE):
             raise GamePhaseException(strings.GAME_PHASE_ERROR_TEMPLATE.format(
                 move_type=self.move_type.name,
                 player_name=self.name
@@ -113,5 +121,5 @@ class Player(ABC):
 
         return game_state.get_empty_cells()
 
-    def get_all_pieces_positions(self):
-        return [piece.position for piece in self.pieces_on_board]
+    def get_all_pieces_positions(self, state):
+        return [piece.position for piece in self.pieces_on_board if len(piece.get_possible_moves(state)) > 0]

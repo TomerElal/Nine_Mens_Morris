@@ -11,8 +11,7 @@ class GuiUserPlayer(Player):
 
         possible_actions = self.get_possible_actions(state, type_of_required_action, selected_position)
         selected_position = None
-        should_relevant_pieces_flash = (type_of_required_action == MoveType.PLACE_PIECE or
-                                        type_of_required_action == MoveType.MOVE_SELECTED_PIECE)
+        should_relevant_pieces_flash = True
 
         for event in events:
 
@@ -39,6 +38,5 @@ class GuiUserPlayer(Player):
                         if pygame.Rect(gui_position[0] - 30, gui_position[1] - 30, 60, 60).collidepoint(mouse_pos):
                             selected_position = valid_position
                             break
-
 
         return selected_position, should_relevant_pieces_flash

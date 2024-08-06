@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from search_agents.base_agent import Agent, AgentType
@@ -22,6 +24,10 @@ class AlphaBetaAgent(Agent):
 
             if curr_game_state.move_type != MoveType.REMOVE_OPPONENT_PIECE:
                 depth += 1
+
+            if (curr_game_state.move_type == MoveType.SELECT_PIECE_TO_MOVE
+                    or curr_game_state.move_type == MoveType.MOVE_SELECTED_PIECE):
+                curr_game_state.move_type = MoveType.MOVE_PIECE
 
             if curr_agent == AgentType.MAX:
                 max_val = -np.inf
@@ -59,7 +65,8 @@ class AlphaBetaAgent(Agent):
                         beta = score
                 return min_val, action_result
 
+        copy_state = copy.deepcopy(game_state)
         start_depth = 0
         if game_state.move_type == MoveType.REMOVE_OPPONENT_PIECE:
             start_depth = 1
-        return alpha_beta_algorithm(AgentType.MAX, game_state, start_depth, -np.inf, np.inf)[1]
+        return alpha_beta_algorithm(AgentType.MAX, copy_state, start_depth, -np.inf, np.inf)[1]

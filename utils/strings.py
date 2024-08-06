@@ -6,8 +6,8 @@ PLAYER_REMOVE_ERROR_TEMPLATE = (
     "Player {name} tried to remove opponent's piece at location {location} but there is no piece in this location"
 )
 
-WINNER_ANNOUNCEMENT_TEMPLATE = "\n🔶🔷🔶 {color}The Winner is {name} {reset}🔶🔷🔶\n\n"
-
+WINNER_ANNOUNCEMENT_TEMPLATE = "\n🔶🔷🔶 {color}The Winner is {name} 🔶🔷🔶\n"
+RESULT = "\n🔶🔷🔶 With a result of {color}{num_pieces_left} {other_color}pieces left on his side!{reset} 🔶🔷🔶\n\n"
 UNCORRELATED_PIECE_COLOR_ERROR_TEMPLATE = (
     "{player_name} asked to move his piece (in {player_color} color) at location"
     " ({prev_row}, {prev_col}), but the color there is {actual_color}."
@@ -49,8 +49,6 @@ PLAYER_PLACED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "{player_name} chose to pl
 PLAYER_REMOVED_PIECE = SEPERATOR + Fore.LIGHTCYAN_EX + "{player_name} chose to remove opponent's piece from location "
 
 TO_LOCATION = " to location "
-
-TIME_TO_SLEEP = 0
 
 
 INSERT_PIECE_INDEX_TO_MOVE = ("Choose a piece of yours to move.\nInsert it's index by the format [num_row][num_column]."
