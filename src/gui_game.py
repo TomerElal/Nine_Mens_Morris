@@ -7,17 +7,6 @@ from utils.utils import *
 from exceptions.piece_not_exist import PieceNotExistException
 from src.game_state import NUM_OF_ROWS, NUM_OF_COLS
 
-# Constants
-BOARD_COLOR = (245, 222, 179)
-LINE_COLOR = (0, 0, 0)
-BLACK_COLOR = (0, 0, 0)
-BLACK_HIGHLIGHT_COLOR = (55, 58, 64)
-WHITE_HIGHLIGHT_COLOR = (247, 220, 185)
-GREEN_HIGHLIGHT_COLOR = (0, 255, 0)
-RED_HIGHLIGHT_COLOR = (252, 65, 0)
-BLACK_PIECE_SIZE = ((BOARD_SIZE / 6) - 5, (BOARD_SIZE / 6) - 5)  # Desired size for the pieces
-WHITE_PIECE_SIZE = ((BOARD_SIZE / 6), (BOARD_SIZE / 6))  # Desired size for the pieces
-
 # Load and resize images
 black_piece_img = pygame.image.load('images/light_black_piece.png')
 white_piece_img = pygame.image.load('images/beige_piece.png')
@@ -30,7 +19,9 @@ background_img = pygame.transform.scale(background_img, GUI_WINDOW_SIZE)
 
 
 class GuiGame:
-    def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game):
+    def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game,
+                 game_manager):
+        self.game_manager = game_manager
         self.iterations_to_wait_after_computer_played = ITERATIONS_TO_WAIT
         self.ai_selected_position = None
         self.num_of_pieces_left_to_provide = num_of_initial_pieces * 2
@@ -61,7 +52,6 @@ class GuiGame:
         self.text_display = ''
 
     def run(self):
-        self.opening_screen()
         self.game_loop()
         winner = self.get_game_result()
         winner_announcement = WINNER_ANNOUNCEMENT_TEMPLATE.format(
@@ -79,23 +69,6 @@ class GuiGame:
 
     def quit(self):
         pass
-
-    def opening_screen(self):
-        self.screen.fill(BOARD_COLOR)
-        self.display_text("Nine Men's Morris", (GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 3),
-                          color=(0, 0, 0), font_size=64)
-        self.display_text("Press any key to start", (GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 2),
-                          color=(0, 0, 0), font_size=48)
-        pygame.display.flip()
-
-        waiting = True
-        while waiting:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                elif event.type == pygame.KEYDOWN:
-                    waiting = False
 
     def game_loop(self):
 
@@ -138,6 +111,8 @@ class GuiGame:
         self.draw_board()
         self.draw_pieces()
         self.draw_player_pieces()
+        self.display_home_button()
+        self.display_exit_button()
         self.display_text(self.text_display, (150, 40))
         if self.pieces_should_flash:
             if self.current_move_type == MoveType.SELECT_PIECE_TO_MOVE:
@@ -218,6 +193,9 @@ class GuiGame:
             self.current_move_type = MoveType.MOVE_SELECTED_PIECE
 
     def move_selected_piece(self, curr_player, player_color, events):
+        player_changed_selected_piece = self.check_if_player_changed_piece_selection(curr_player, events)
+        if player_changed_selected_piece:
+            return
         desired_position, self.pieces_should_flash = curr_player.get_action(self.game_state, self.current_move_type,
                                                                             events, self.pieces_in_gui,
                                                                             self.selected_piece)
@@ -225,6 +203,22 @@ class GuiGame:
 
         if desired_position:
             self.do_the_actual_piece_move(curr_player, desired_position, player_color)
+
+    def check_if_player_changed_piece_selection(self, curr_player, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                possible_select_actions = curr_player.get_possible_actions(self.game_state,
+                                                                           MoveType.SELECT_PIECE_TO_MOVE,
+                                                                           self.selected_piece)
+                for index_location, piece in self.pieces_in_gui.items():
+                    if piece['rect'].collidepoint(mouse_pos):
+                        if index_location in possible_select_actions:
+                            self.selected_piece_to_move_pos = index_location
+                            self.selected_piece = curr_player.get_piece_by_position(self.selected_piece_to_move_pos)
+                            return
+                        break  # Means the user clicked on invalid spot.
+                return False
 
     def do_the_actual_piece_move(self, curr_player, desired_position, player_color):
         if curr_player.is_computer_player:
@@ -371,3 +365,40 @@ class GuiGame:
                 center=(GUI_WINDOW_SIZE[0] // 2, position[1] + i * (GUI_WINDOW_SIZE[1] - 80)))
             self.screen.blit(text_surface, text_rect)
         self.font = pygame.font.SysFont('Cooper Black', 32)
+
+    def display_home_button(self):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        x, y, w, h = 20, 20, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
+
+        if x + w > mouse[0] > x and y + h > mouse[1] > y:
+            pygame.draw.rect(self.screen, BUTTON_HOVER_COLOR, (x, y, w, h))
+            if click[0] == 1:
+                self.game_manager.opening_screen()
+        else:
+            pygame.draw.rect(self.screen, BUTTON_COLOR, (x, y, w, h))
+
+        self.font = pygame.font.SysFont('Cooper Black', 20)
+        text_surface = self.font.render("Home", True, TEXT_COLOR)
+        text_rect = text_surface.get_rect(center=(x + w / 2, y + h / 2))
+        self.font = pygame.font.SysFont('Cooper Black', 32)
+        self.screen.blit(text_surface, text_rect)
+
+    def display_exit_button(self):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        x, y, w, h = 20, 57, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
+
+        if x + w > mouse[0] > x and y + h > mouse[1] > y:
+            pygame.draw.rect(self.screen, BUTTON_HOVER_COLOR, (x, y, w, h))
+            if click[0] == 1:
+                pygame.quit()
+                exit()
+        else:
+            pygame.draw.rect(self.screen, BUTTON_COLOR, (x, y, w, h))
+
+        self.font = pygame.font.SysFont('Cooper Black', 20)
+        text_surface = self.font.render("Exit", True, TEXT_COLOR)
+        text_rect = text_surface.get_rect(center=(x + w / 2, y + h / 2))
+        self.font = pygame.font.SysFont('Cooper Black', 32)
+        self.screen.blit(text_surface, text_rect)

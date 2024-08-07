@@ -4,10 +4,25 @@ from src import game_state
 from src.move import Move
 from utils.strings import *
 
+# Constants
+BOARD_COLOR = (245, 222, 179)
+LINE_COLOR = (0, 0, 0)
+BLACK_COLOR = (0, 0, 0)
+BLACK_HIGHLIGHT_COLOR = (55, 58, 64)
+WHITE_HIGHLIGHT_COLOR = (247, 220, 185)
+GREEN_HIGHLIGHT_COLOR = (0, 255, 0)
+RED_HIGHLIGHT_COLOR = (252, 65, 0)
+
 GUI_WINDOW_SIZE = (1000, 700)
 CONSOLE_TIME_TO_SLEEP = 0
 GUI_TIME_TO_SLEEP = 0
 ITERATIONS_TO_WAIT = 10
+
+BUTTON_WIDTH = 200
+BUTTON_HEIGHT = 60
+BUTTON_COLOR = (254, 216, 177)
+BUTTON_HOVER_COLOR = (222, 172, 128)
+TEXT_COLOR = (134, 84, 57)
 
 # Board dimensions
 BOARD_SIZE = 500
@@ -37,6 +52,8 @@ POSITIONS = [
     [(BOARD_OFFSET_X, BOARD_OFFSET_Y + BOARD_SIZE), (BOARD_OFFSET_X + (BOARD_SIZE // 2), BOARD_OFFSET_Y + BOARD_SIZE),
      (BOARD_OFFSET_X + BOARD_SIZE, BOARD_OFFSET_Y + BOARD_SIZE)]
 ]
+BLACK_PIECE_SIZE = ((BOARD_SIZE / 6) - 5, (BOARD_SIZE / 6) - 5)  # Desired size for the pieces
+WHITE_PIECE_SIZE = ((BOARD_SIZE / 6), (BOARD_SIZE / 6))  # Desired size for the pieces
 
 
 def convert_move_to_action(desired_move, piece_position):
