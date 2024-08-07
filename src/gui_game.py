@@ -369,7 +369,7 @@ class GuiGame:
     def display_home_button(self):
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
-        x, y, w, h = 20, 20, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
+        x, y, w, h = 20, 625, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
 
         if x + w > mouse[0] > x and y + h > mouse[1] > y:
             pygame.draw.rect(self.screen, BUTTON_HOVER_COLOR, (x, y, w, h))
@@ -387,7 +387,7 @@ class GuiGame:
     def display_exit_button(self):
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
-        x, y, w, h = 20, 57, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
+        x, y, w, h = 20, 662, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2
 
         if x + w > mouse[0] > x and y + h > mouse[1] > y:
             pygame.draw.rect(self.screen, BUTTON_HOVER_COLOR, (x, y, w, h))

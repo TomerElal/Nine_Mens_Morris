@@ -43,13 +43,8 @@ The game is won by reducing the opponent to two pieces or by blocking all the op
 - **strings.py**: Contains string constants used in the project.
 - **utils.py**: Utility functions used throughout the project.
 - **exceptions/**: Custom exception classes.
-- **player_types/**: Contains different types of player implementations.
-  - **minimax_player.py**: Implements a player using the Minimax algorithm.
-  - **random_player.py**: Implements a player making random moves.
-  - **user_player.py**: Implements a human player.
-- **search_agents/**: Contains search algorithms used by AI players.
-  - **base_agent.py**: Base class for search agents.
-  - **minimax_agent.py**: Implements the Minimax search algorithm.
+- **player_types/**: Contains different player implementations.
+- **search_agents/**: Implements search algorithms like Minimax and Expectimax.
 
 ### Classes and Inheritance
 
@@ -58,11 +53,13 @@ The game is won by reducing the opponent to two pieces or by blocking all the op
 - **MoveType**: Enum for different types of moves.
 - **Piece**: Represents a piece on the board.
 - **Player**: Abstract base class for players, with subclasses for specific player types.
-- **UserPlayer**: Allows a human player to interact with the game.
-- **RandomPlayer**: Implements a player that makes random moves.
-- **MinimaxPlayer**: Implements a player that uses the Minimax algorithm.
+  - **GuiUserPlayer**: Allows a human player to interact with the game through GUI.
+  - **RandomPlayer**: Implements a player that makes random moves.
+  - **GuiMultiAgentsPlayer**: Implements a player that uses various algorithms (e.g., Minimax, AlphaBeta) through GUI.
 - **BaseAgent**: Base class for search agents.
-- **MinimaxAgent**: Implements the Minimax algorithm for decision making.
+  - **MinimaxAgent**: Implements the Minimax algorithm for decision making.
+  - **ExpectiMaxAgent**: Implements the Expectimax algorithm.
+  - **AlphaBetaAgent**: Implements the Alpha-Beta pruning algorithm.
 
 ## Setup and Installation
 
