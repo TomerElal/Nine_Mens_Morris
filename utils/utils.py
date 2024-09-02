@@ -72,8 +72,10 @@ def convert_right_or_left_move_to_action(piece_col_position, piece_row_position,
 
 def move_performed_a_mill(piece_new_location, state, player_color):
     board_connections = game_state.GameState.BOARD_CONNECTIONS
-    moved_piece_connections = board_connections[piece_new_location]
-
+    try:
+        moved_piece_connections = board_connections[piece_new_location]
+    except Exception as e:
+        print(e)
     return (
             check_mill_horizontal(board_connections, moved_piece_connections, piece_new_location, player_color, state)
             or
@@ -103,13 +105,13 @@ def mill_from_right_or_middle(board_connections, moved_piece_connections, piece_
                 location_of_two_cells_from_left = (location_of_one_cell_from_left[0],
                                                    location_of_one_cell_from_left[1] - 1)
                 if state.get_cell_state(location_of_two_cells_from_left) == player_color:
-                    return True
+                    return location_of_one_cell_from_left
 
             # Case where the moved piece is at the middle of the row.
             if Move.RIGHT in moved_piece_connections:
                 location_of_one_cell_from_right = (piece_new_location[0], piece_new_location[1] + 1)
                 if state.get_cell_state(location_of_one_cell_from_right) == player_color:
-                    return True
+                    return location_of_one_cell_from_right
     return False
 
 
@@ -123,7 +125,7 @@ def mill_from_left(board_connections, moved_piece_connections, piece_new_locatio
                 location_of_two_cells_from_right = (location_of_one_cell_from_right[0],
                                                     location_of_one_cell_from_right[1] + 1)
                 if state.get_cell_state(location_of_two_cells_from_right) == player_color:
-                    return True
+                    return location_of_one_cell_from_right
     return False
 
 
@@ -147,13 +149,13 @@ def mill_from_bottom_or_middle(board_connections, moved_piece_connections, piece
             if Move.UP in one_cell_above_connections:
                 two_cells_above_location = compute_adjacent_cell_pos(one_cell_above_location)
                 if state.get_cell_state(two_cells_above_location) == player_color:
-                    return True
+                    return one_cell_above_location
 
             # Case where the moved piece is at the middle.
             if Move.DOWN in moved_piece_connections:
                 one_cell_bellow_location = compute_adjacent_cell_pos(piece_new_location, Move.DOWN)
                 if state.get_cell_state(one_cell_bellow_location) == player_color:
-                    return True
+                    return one_cell_bellow_location
     return False
 
 
@@ -166,7 +168,7 @@ def mill_from_top(board_connections, moved_piece_connections, piece_new_location
             if Move.DOWN in one_cell_bellow_connections:
                 two_cells_bellow_location = compute_adjacent_cell_pos(one_cell_bellow_location, Move.DOWN)
                 if state.get_cell_state(two_cells_bellow_location) == player_color:
-                    return True
+                    return one_cell_bellow_location
     return False
 
 

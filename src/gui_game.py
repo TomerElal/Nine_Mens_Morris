@@ -150,6 +150,7 @@ class GuiGame:
             curr_player.add_piece(player_new_piece)
             self.place_piece_in_gui(desired_piece_position[0], desired_piece_position[1], player_color)
             self.game_state.update_board(new_position=desired_piece_position, piece_color=player_color)
+            # self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn
             if player_color == CellState.WHITE:
                 self.player_1_pieces -= 1
             else:

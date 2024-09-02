@@ -84,6 +84,10 @@ PLAYER_TURN_GREETING_TEMPLATE = "{color}\n{name} {reset}it's your turn! 😎\n"
 
 RANDOM_PLAYER = "Random Player"
 
+SMART_PLAYER = "Smart Player"
+
+MCTS_PLAYER = "MCTS Player"
+
 MINIMAX_PLAYER = "Minimax Player"
 
 EXPECTIMAX_PLAYER = "Expectimax Player"

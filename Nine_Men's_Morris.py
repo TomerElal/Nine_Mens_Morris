@@ -5,6 +5,7 @@ from player_types.console_user_player import ConsoleUserPlayer
 from player_types.gui_user_player import GuiUserPlayer
 from src.move import MoveType
 from player_types.random_player import RandomPlayer
+from player_types.smart_player import SmartPlayer
 from player_types.console_multi_agents_player import MultiAgentsPlayer
 from player_types.gui_multi_agent_player import GuiMultiAgentsPlayer
 from search_agents.minimax_agent import MiniMaxAgent
@@ -47,7 +48,7 @@ class GameManager:
 
     def run_single_game(self):
         if self.gui_display:
-            self.initial_state = GameState(self.player_1, self.player_2, MoveType.PLACE_PIECE)
+            self.initial_state = GameState(self.player_1, self.player_2, MoveType.PLACE_PIECE, player_turn=2)
             new_game = GuiGame(self.player_1, self.player_2, self.initial_state,
                                self.num_of_pieces_in_game, self.player_1_starts, self)
         else:
@@ -64,8 +65,10 @@ class GameManager:
         options = [
             "User player vs User player",
             "User player vs AI",
+            "User player vs Smart player",
             "User player vs Random player",
-            "AI player vs Random player"
+            "AI player vs Smart player",
+            "MCTS player vs User player",
         ]
 
         def draw_text(text, position, color, font_size=32):
@@ -112,23 +115,38 @@ class GameManager:
             self.start_game()
 
         def start_user_vs_random():
-            self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=True)
+            self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
             self.player_2 = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.BLACK,
                                          is_computer_player=True, is_gui_game=True)
+            self.start_game()
+
+        def start_user_vs_smart():
+            self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
+            self.player_2 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.BLACK,
+                                        is_computer_player=True, is_gui_game=True)
             self.start_game()
 
         def start_ai_vs_random():
             self.player_1 = GuiMultiAgentsPlayer(ALPHA_BETA_PLAYER, NUM_OF_PIECES, CellState.WHITE, AlphaBetaAgent(),
                                                  is_computer_player=True)
-            self.player_2 = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.BLACK,
-                                         is_computer_player=True, is_gui_game=True)
+            self.player_2 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.BLACK,
+                                        is_computer_player=True, is_gui_game=True)
+            self.start_game()
+
+        from search_agents.mcts_agent import MCTSAgent
+
+        def start_user_vs_mcts():
+            self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
+            self.player_2 = GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, CellState.BLACK, MCTSAgent(),
+                                                 is_computer_player=True)
             self.start_game()
 
         def exit_game():
             pygame.quit()
             exit()
 
-        actions = [start_user_vs_user, start_user_vs_ai, start_user_vs_random, start_ai_vs_random]
+        actions = [start_user_vs_user, start_user_vs_ai, start_user_vs_smart, start_user_vs_random, start_ai_vs_random,
+                   start_user_vs_mcts]
 
         running = True
         while running:
@@ -141,7 +159,7 @@ class GameManager:
             draw_text("Nine Men's Morris", (GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 4), HEADLINE_COLOR, 64)
 
             for idx, option in enumerate(options):
-                button(option, (GUI_WINDOW_SIZE[0] // 2 - BUTTON_WIDTH // 2), (GUI_WINDOW_SIZE[1] // 2 + idx * 70),
+                button(option, (GUI_WINDOW_SIZE[0] // 2 - BUTTON_WIDTH // 2), (GUI_WINDOW_SIZE[1] // 2.5 + idx * 70),
                        BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR, BUTTON_HOVER_COLOR, actions[idx])
 
             exit_button(20, 20, EXIT_BUTTON_SIZE, EXIT_BUTTON_COLOR, EXIT_BUTTON_HOVER_COLOR, exit_game)

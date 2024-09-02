@@ -81,11 +81,16 @@ def there_are_zero_pieces_left_to_place(player1, player2):
 class GameState:
     BOARD_CONNECTIONS = initialize_board_connections()
 
-    def __init__(self, player1, player2, curr_move_type, existing_board=None):
+    def __init__(self, player1, player2, curr_move_type, existing_board=None, last_move=None, player_turn=1):
         self.move_type = curr_move_type
         self.player1 = player1
         self.player2 = player2
         self.board = existing_board if existing_board else initialize_board()
+        self.last_move = last_move  # Store the last move
+        self.curr_player_turn = player_turn
+
+    def get_last_move(self):
+        return self.last_move
 
     def get_empty_cells(self):
         empty_cells = []
@@ -122,8 +127,8 @@ class GameState:
         if self.move_type == MoveType.REMOVE_OPPONENT_PIECE:
             next_move_type, prev_position = self.remove_opponent_piece_when_generate_successor(action, curr_player,
                                                                                                other_player)
-
-        new_state = GameState(copy_state.player1, copy_state.player2, next_move_type, existing_board=copy_state.board)
+        new_state = GameState(copy_state.player1, copy_state.player2, next_move_type, existing_board=copy_state.board,
+                              last_move=action, player_turn=3 - copy_state.curr_player_turn)
         new_state.update_board(prev_position, new_position, player_color)
 
         self.handle_new_mill_situation_after_generate_successor(curr_player, new_position, new_state, player_color)
@@ -134,6 +139,7 @@ class GameState:
         if new_position and move_performed_a_mill(new_position, new_state, player_color):
             new_state.move_type = MoveType.REMOVE_OPPONENT_PIECE
             curr_player.move_type = MoveType.REMOVE_OPPONENT_PIECE
+            new_state.curr_player_turn = 3 - new_state.curr_player_turn
 
     def remove_opponent_piece_when_generate_successor(self, action, curr_player, other_player):
         prev_position = action
@@ -165,12 +171,12 @@ class GameState:
             display_board(self.board)
             self.get_legal_actions(player_number)
             raise UnCorrelatedPieceColor(strings.UNCORRELATED_PIECE_COLOR_ERROR_TEMPLATE.format(
-                    player_name=curr_player.name,
-                    player_color=player_color.name,
-                    prev_row=prev_position[0],
-                    prev_col=prev_position[1],
-                    actual_color=(self.board[prev_position[0]][prev_position[1]]).name
-                ))
+                player_name=curr_player.name,
+                player_color=player_color.name,
+                prev_row=prev_position[0],
+                prev_col=prev_position[1],
+                actual_color=(self.board[prev_position[0]][prev_position[1]]).name
+            ))
         curr_player.handle_piece_movement_action(prev_position, new_position, self.BOARD_CONNECTIONS[new_position])
         return new_position, prev_position
 
@@ -187,6 +193,9 @@ class GameState:
     def get_cell_state(self, location):
         return self.board[location[0]][location[1]]
 
+    def set_cell_state(self, location, new_state):
+        self.board[location[0]][location[1]] = new_state
+
     def is_game_over(self):
         return (self.player1.is_lost_game(self, self.move_type)
                 or
@@ -196,3 +205,21 @@ class GameState:
         if player_number == 1:
             return self.player1.get_possible_actions(self, self.move_type)
         return self.player2.get_possible_actions(self, self.move_type)
+
+    def get_opponent_legal_actions(self, player_color):
+        action_type = MoveType.MOVE_PIECE if (self.player1.num_of_pieces_left_to_place +
+                                              self.player2.num_of_pieces_left_to_place == 0) \
+            else MoveType.PLACE_PIECE
+        if player_color == self.player1.get_player_color():
+            return self.player2.get_possible_actions(self, action_type)
+        return self.player1.get_possible_actions(self, action_type)
+
+    def get_opponent_color(self, player_color):
+        if player_color == self.player1.get_player_color():
+            return self.player2.get_player_color()
+        return self.player1.get_player_color()
+
+    def get_player_move_type(self, player_number):
+        if player_number == 1:
+            return self.player1.move_type
+        return self.player2.move_type
