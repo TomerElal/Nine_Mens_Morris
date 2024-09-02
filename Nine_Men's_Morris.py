@@ -48,7 +48,7 @@ class GameManager:
 
     def run_single_game(self):
         if self.gui_display:
-            self.initial_state = GameState(self.player_1, self.player_2, MoveType.PLACE_PIECE, player_turn=2)
+            self.initial_state = GameState(self.player_1, self.player_2, MoveType.PLACE_PIECE)
             new_game = GuiGame(self.player_1, self.player_2, self.initial_state,
                                self.num_of_pieces_in_game, self.player_1_starts, self)
         else:
