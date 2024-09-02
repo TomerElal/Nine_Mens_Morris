@@ -145,12 +145,12 @@ class GuiGame:
                 self.iterations_to_wait_after_computer_played = ITERATIONS_TO_WAIT
             self.num_of_pieces_left_to_provide -= 1
             self.player_1_turn = not self.player_1_turn
+            self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn
             player_new_piece = Piece(player_color, desired_piece_position,
                                      self.board_connections[desired_piece_position])
             curr_player.add_piece(player_new_piece)
             self.place_piece_in_gui(desired_piece_position[0], desired_piece_position[1], player_color)
             self.game_state.update_board(new_position=desired_piece_position, piece_color=player_color)
-            # self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn
             if player_color == CellState.WHITE:
                 self.player_1_pieces -= 1
             else:
@@ -163,6 +163,7 @@ class GuiGame:
                 self.game_state.move_type = MoveType.SELECT_PIECE_TO_MOVE
             if move_performed_a_mill(desired_piece_position, self.game_state, player_color):
                 self.player_1_turn = not self.player_1_turn  # We need the same player to play in the next turn.
+                self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn  # We need the same player to play in the next turn.
                 self.current_move_type = MoveType.REMOVE_OPPONENT_PIECE
                 curr_player.move_type = MoveType.REMOVE_OPPONENT_PIECE
                 self.game_state.move_type = MoveType.REMOVE_OPPONENT_PIECE
@@ -235,6 +236,7 @@ class GuiGame:
         self.selected_piece_to_move_pos = self.selected_piece = None
         self.current_move_type = MoveType.SELECT_PIECE_TO_MOVE
         self.player_1_turn = not self.player_1_turn  # Turn of the other player.
+        self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn  # Turn of the other player.
         self.ai_selected_position = None
 
         if curr_player.is_computer_player:
@@ -244,6 +246,7 @@ class GuiGame:
 
         if move_performed_a_mill(desired_position, self.game_state, player_color):
             self.player_1_turn = not self.player_1_turn  # We need the same player to play in the next turn.
+            self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn  # We need the same player to play in the next turn.
             self.current_move_type = MoveType.REMOVE_OPPONENT_PIECE
             curr_player.move_type = MoveType.REMOVE_OPPONENT_PIECE
             self.game_state.move_type = MoveType.REMOVE_OPPONENT_PIECE
@@ -277,6 +280,7 @@ class GuiGame:
             self.game_state.move_type = self.prev_move_type
             self.remove_piece_in_gui(opponent_remove_location[0], opponent_remove_location[1])
             self.player_1_turn = not self.player_1_turn  # Turn of the other player.
+            self.game_state.curr_player_turn = 3 - self.game_state.curr_player_turn  # Turn of the other player.
 
     def decide_turn(self):
         if self.player_1_turn:

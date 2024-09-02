@@ -15,7 +15,9 @@ class MCTSNode:
         self.wins = 0
 
     def is_fully_expanded(self):
-        return len(self.children) == len(self.state.get_legal_actions(2))
+        if self.state.move_type != self.state.get_player_move_type(self.state.curr_player_turn):
+            k=9
+        return len(self.children) == len(self.state.get_legal_actions(self.state.curr_player_turn))
 
     def best_child(self, exploration_weight=1.4):
         choices_weights = [
@@ -31,7 +33,7 @@ class MCTSNode:
 
 
 class MCTSAgent:
-    def __init__(self, num_simulations=50):
+    def __init__(self, num_simulations=2):
         self.num_simulations = num_simulations
 
     def get_action(self, game_state):
@@ -68,11 +70,8 @@ class MCTSAgent:
     def simulate(self, state):
         curr_simulation_state = copy.deepcopy(state)
         player_turn = state.curr_player_turn
-        i = 0
         while not curr_simulation_state.is_game_over():
-            print(i)
             legal_actions = curr_simulation_state.get_legal_actions(player_turn)
-            i += 1
             action = random.choice(legal_actions)
             curr_simulation_state = curr_simulation_state.generate_new_state_successor(player_turn, action)
             player_turn = curr_simulation_state.curr_player_turn  # Switch player

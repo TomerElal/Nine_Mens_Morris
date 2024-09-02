@@ -12,7 +12,7 @@ class AlphaBetaAgent(Agent):
         # TODO: Player1 should represent MAX agent.
         return len(game_state.player1.pieces_on_board) - len(game_state.player2.pieces_on_board)
 
-    def __init__(self, depth=1):
+    def __init__(self, depth=2):
         self.search_depth = depth * 2
 
     def get_action(self, game_state):
