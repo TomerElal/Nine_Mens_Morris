@@ -97,6 +97,26 @@ class Player(ABC):
                 all_possible_actions.append((piece.position, correlated_action))
         return all_possible_actions
 
+    def is_part_of_mill(self, game_state, position, player_color):
+        """Check if the piece at the given position is part of a horizontal or vertical mill."""
+        row, col = position
+
+        # Check horizontal mill
+        horizontal_mill = True
+        for c in range(NUM_OF_COLS):
+            if game_state.board[row][c] != player_color:
+                horizontal_mill = False
+                break
+
+        # Check vertical mill
+        vertical_mill = True
+        for r in range(NUM_OF_ROWS):
+            if game_state.board[r][col] != player_color:
+                vertical_mill = False
+                break
+
+        return horizontal_mill or vertical_mill
+
     def get_possible_opponent_remove_pieces(self, game_state):
         if not self.move_type == MoveType.REMOVE_OPPONENT_PIECE:
             raise GamePhaseException(strings.GAME_PHASE_ERROR_REMOVE_TEMPLATE.format(
@@ -105,11 +125,19 @@ class Player(ABC):
             ))
 
         opponent_cells = []
+        non_mill_opponent_cells = []
         for row in range(NUM_OF_ROWS):
             for col in range(NUM_OF_COLS):
                 curr_cell = game_state.board[row][col]
                 if curr_cell != CellState.EMPTY and curr_cell != self.player_color:
                     opponent_cells.append((row, col))
+                    if not self.is_part_of_mill(game_state, (row, col), curr_cell):
+                        non_mill_opponent_cells.append((row, col))
+
+        if non_mill_opponent_cells:
+            return non_mill_opponent_cells
+
+        # If all opponent pieces are in mills, return all opponent pieces
         return opponent_cells
 
     def get_possible_piece_placements(self, game_state):

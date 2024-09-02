@@ -97,3 +97,5 @@ ALPHA_BETA_PLAYER = "AlphaBeta Player"
 PLAYER2 = "Player 2"
 
 PLAYER1 = "Player 1"
+
+DQN_PLAYER = "Deep-Q-Learning Player"

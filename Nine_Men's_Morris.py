@@ -11,6 +11,7 @@ from player_types.gui_multi_agent_player import GuiMultiAgentsPlayer
 from search_agents.minimax_agent import MiniMaxAgent
 from search_agents.expectimax_agent import ExpectiMaxAgent
 from search_agents.alpha_beta_pruning import AlphaBetaAgent
+from search_agents.deep_q_learning import DQNAgent
 from utils.strings import *
 from utils.utils import *
 from src.gui_game import GuiGame
@@ -18,7 +19,7 @@ from src.gui_game import GuiGame
 NUM_OF_PIECES = 9
 
 # Constants for GUI
-GUI_WINDOW_SIZE = (1000, 700)
+GUI_WINDOW_SIZE = (1000, 900)
 BUTTON_WIDTH = 400
 BUTTON_HEIGHT = 60
 BUTTON_COLOR = (134, 84, 57)
@@ -69,6 +70,7 @@ class GameManager:
             "User player vs Random player",
             "AI player vs Smart player",
             "MCTS player vs User player",
+            "DQN player vs User player"
         ]
 
         def draw_text(text, position, color, font_size=32):
@@ -141,12 +143,24 @@ class GameManager:
                                                  is_computer_player=True)
             self.start_game()
 
+        def start_user_vs_DQN():
+            player1 = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.WHITE,
+                                    is_computer_player=True, is_gui_game=False)
+            dqn_agent = DQNAgent(state_size=26, action_size=24)
+            env = GameState(player1, GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
+                                                 is_computer_player=True), MoveType.PLACE_PIECE)
+            dqn_agent.train(env, 10000)
+            self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
+            self.player_2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
+                                                 is_computer_player=True)
+            self.start_game()
+
         def exit_game():
             pygame.quit()
             exit()
 
         actions = [start_user_vs_user, start_user_vs_ai, start_user_vs_smart, start_user_vs_random, start_ai_vs_random,
-                   start_user_vs_mcts]
+                   start_user_vs_mcts, start_user_vs_DQN]
 
         running = True
         while running:
