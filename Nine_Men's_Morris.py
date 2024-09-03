@@ -19,7 +19,7 @@ NUM_OF_PIECES = 9
 
 # Constants for GUI
 GUI_WINDOW_SIZE = (1000, 700)
-BUTTON_WIDTH = 400
+BUTTON_WIDTH = 500
 BUTTON_HEIGHT = 60
 BUTTON_COLOR = (134, 84, 57)
 BUTTON_HOVER_COLOR = (222, 172, 128)
@@ -60,15 +60,15 @@ class GameManager:
         pygame.init()
         screen = pygame.display.set_mode(GUI_WINDOW_SIZE)
         pygame.display.set_caption("Nine Men's Morris")
-        font = pygame.font.SysFont('Cooper Black', 32)
 
         options = [
             "User player vs User player",
-            "User player vs AI",
+            "User player vs AlphaBeta-AI",
             "User player vs Smart player",
             "User player vs Random player",
-            "AI player vs Smart player",
-            "MCTS player vs User player",
+            "AlphaBeta-AI player vs Smart player",
+            "MCTS-AI player vs User player",
+            "MCTS-AI player vs Smart player",
         ]
 
         def draw_text(text, position, color, font_size=32):
@@ -137,7 +137,14 @@ class GameManager:
 
         def start_user_vs_mcts():
             self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
-            self.player_2 = GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, CellState.BLACK, MCTSAgent(),
+            self.player_2 = GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, CellState.BLACK, MCTSAgent(1),
+                                                 is_computer_player=True)
+            self.start_game()
+
+        def start_smart_vs_mcts():
+            self.player_1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE,
+                                        is_computer_player=True, is_gui_game=True)
+            self.player_2 = GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, CellState.BLACK, MCTSAgent(1),
                                                  is_computer_player=True)
             self.start_game()
 
@@ -146,7 +153,7 @@ class GameManager:
             exit()
 
         actions = [start_user_vs_user, start_user_vs_ai, start_user_vs_smart, start_user_vs_random, start_ai_vs_random,
-                   start_user_vs_mcts]
+                   start_user_vs_mcts, start_smart_vs_mcts]
 
         running = True
         while running:
@@ -156,10 +163,10 @@ class GameManager:
                     exit()
 
             screen.fill(BACKGROUND_COLOR)
-            draw_text("Nine Men's Morris", (GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 4), HEADLINE_COLOR, 64)
+            draw_text("Nine Men's Morris", (GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 6), HEADLINE_COLOR, 64)
 
             for idx, option in enumerate(options):
-                button(option, (GUI_WINDOW_SIZE[0] // 2 - BUTTON_WIDTH // 2), (GUI_WINDOW_SIZE[1] // 2.5 + idx * 70),
+                button(option, (GUI_WINDOW_SIZE[0] // 2 - BUTTON_WIDTH // 2), (GUI_WINDOW_SIZE[1] // 3.5 + idx * 70),
                        BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_COLOR, BUTTON_HOVER_COLOR, actions[idx])
 
             exit_button(20, 20, EXIT_BUTTON_SIZE, EXIT_BUTTON_COLOR, EXIT_BUTTON_HOVER_COLOR, exit_game)

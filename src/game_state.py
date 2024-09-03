@@ -214,8 +214,13 @@ class GameState:
             return self.player2.get_possible_actions(self, action_type)
         return self.player1.get_possible_actions(self, action_type)
 
-    def get_opponent_color(self, player_color):
-        if player_color == self.player1.get_player_color():
+    def get_curr_player_color(self):
+        if self.curr_player_turn == 1:
+            return self.player1.get_player_color()
+        return self.player2.get_player_color()
+
+    def get_opponent_color(self):
+        if self.curr_player_turn == 1:
             return self.player2.get_player_color()
         return self.player1.get_player_color()
 

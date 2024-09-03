@@ -58,7 +58,9 @@ class Player(ABC):
         return (
                 (self.num_of_pieces_left_to_place == 0 and len(self.pieces_on_board) < 3)
                 or
-                (action_type == MoveType.MOVE_PIECE and len(self.get_possible_actions(state, action_type)) == 0)
+                ((action_type == MoveType.MOVE_PIECE
+                  or action_type == MoveType.SELECT_PIECE_TO_MOVE) and len(
+                    self.get_possible_actions(state, action_type)) == 0)
         )
 
     def get_possible_actions(self, state, desired_action_type=MoveType.MOVE_PIECE, selected_piece=None):
