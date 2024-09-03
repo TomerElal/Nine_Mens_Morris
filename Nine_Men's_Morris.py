@@ -15,6 +15,8 @@ from search_agents.deep_q_learning import DQNAgent
 from utils.strings import *
 from utils.utils import *
 from src.gui_game import GuiGame
+import argparse
+import torch
 
 NUM_OF_PIECES = 9
 
@@ -30,7 +32,7 @@ EXIT_BUTTON_SIZE = 40
 EXIT_BUTTON_COLOR = (134, 84, 57)
 EXIT_BUTTON_HOVER_COLOR = (64, 34, 24)
 HEADLINE_COLOR = (64, 34, 24)
-
+dqn_agent = DQNAgent(state_size=26, action_size=24)
 
 class GameManager:
     def __init__(self, player_1=None, player_2=None, player_1_starts_the_game=True,
@@ -144,12 +146,6 @@ class GameManager:
             self.start_game()
 
         def start_user_vs_DQN():
-            player1 = RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, CellState.WHITE,
-                                    is_computer_player=True, is_gui_game=False)
-            dqn_agent = DQNAgent(state_size=26, action_size=24)
-            env = GameState(player1, GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
-                                                 is_computer_player=True), MoveType.PLACE_PIECE)
-            dqn_agent.train(env, 10000)
             self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
             self.player_2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
                                                  is_computer_player=True)
@@ -181,7 +177,24 @@ class GameManager:
             pygame.display.update()
 
 
+def train_model():
+    player1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE, is_computer_player=True, is_gui_game=False)
+    player2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent, is_computer_player=True)
+    num_episodes = 50
+    if torch.cuda.is_available():
+        num_episodes = 1000
+
+    dqn_agent.train(player1, player2, num_episodes)
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Train or test the Nine Men's Morris DQN agent.")
+    parser.add_argument('--train', action='store_true', help="Train the DQN agent")
+    args = parser.parse_args()
+    if args.train:
+        train_model()
+        print("Training complete!")
+
     game_manager = GameManager(gui_display=True)
     game_manager.opening_screen()
 

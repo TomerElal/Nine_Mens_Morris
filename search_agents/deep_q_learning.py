@@ -10,7 +10,11 @@ from src.move import Move, MoveType
 from src.game_state import GameState, CellState, NUM_OF_ROWS, NUM_OF_COLS
 import copy
 
-
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else
+    "mps" if torch.backends.mps.is_available() else
+    "cpu"
+)
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
@@ -71,7 +75,7 @@ def get_state_vector(game_state):
         for cell in row:
             board_state.append(cell.value)
     state_vector = board_state + [game_state.curr_player_turn, game_state.move_type.value]
-    return torch.tensor([state_vector], dtype=torch.float32)
+    return torch.tensor([state_vector], device=device, dtype=torch.float32)
 
 
 def map_action_to_game(game_state, action_index):
@@ -117,7 +121,7 @@ def opponent_select_action(game_state):
 class DQNAgent(Agent):
     def __init__(self, state_size, action_size,
                  batch_size=128, gamma=0.99, epsilon_start=0.9,
-                 epsilon_end=0.05, epsilon_decay=1000, target_update=10,
+                 epsilon_end=0.05, epsilon_decay=1000, tau=0.005,
                  memory_size=10000, lr=1e-3):
         self.state_size = state_size
         self.action_size = action_size
@@ -126,17 +130,15 @@ class DQNAgent(Agent):
         self.epsilon_end = epsilon_end
         self.epsilon_decay = epsilon_decay
         self.batch_size = batch_size
-        self.target_update = target_update
+        self.tau = tau
 
         # Initialize the network
-        self.policy_net = DQN(state_size, action_size)
-        self.target_net = DQN(state_size, action_size)
+        self.policy_net = DQN(state_size, action_size).to(device)
+        self.target_net = DQN(state_size, action_size).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
-        # TODO: check if needed
-        self.target_net.eval()
 
-        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
-        self.criterion = nn.MSELoss()
+        self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=lr, amsgrad=True)
+        self.criterion = nn.SmoothL1Loss()
         self.steps_done = 0
         # Initialize replay buffer
         self.memory = ReplayMemory(memory_size)
@@ -160,10 +162,10 @@ class DQNAgent(Agent):
 
                     valid_q_values_tensor = torch.tensor(valid_q_values)
                     best_action_index = valid_q_values_tensor.argmax().item()
-                    return torch.tensor([[valid_actions[best_action_index]]], dtype=torch.long)
+                    return torch.tensor([[valid_actions[best_action_index]]], device=device, dtype=torch.long)
 
                 # Mask invalid actions by setting their Q-values to a very low number
-                masked_q_values = torch.full(q_values.shape, -float('inf'))
+                masked_q_values = torch.full(q_values.shape, -float('inf')).to(device)
                 masked_q_values[0, valid_actions] = q_values[0, valid_actions]
                 return masked_q_values.max(1)[1].view(1, 1)
 
@@ -177,17 +179,18 @@ class DQNAgent(Agent):
         transitions = self.memory.sample(self.batch_size)
         batch = Transition(*zip(*transitions))
 
-        state_batch = torch.cat(batch.state)
-        action_batch = torch.tensor(batch.action)
-        reward_batch = torch.tensor(batch.reward)
-        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), dtype=torch.bool)
-        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+        state_batch = torch.cat(batch.state).to(device)
+        action_batch = torch.cat(batch.action).to(device)
+        reward_batch = torch.cat(batch.reward).to(device)
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)),device=device,
+                                      dtype=torch.bool)
+        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None]).to(device)
 
         state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
-        next_state_values = torch.zeros(self.batch_size)
+        next_state_values = torch.zeros(self.batch_size, device=device)
         with torch.no_grad():
-            next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0]
+            next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1).values
 
         expected_state_action_values = (next_state_values * self.gamma) + reward_batch
 
@@ -195,8 +198,7 @@ class DQNAgent(Agent):
 
         self.optimizer.zero_grad()
         loss.backward()
-        for param in self.policy_net.parameters():
-            param.grad.data.clamp_(-1, 1)
+        torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
     def get_action(self, game_state):
@@ -205,12 +207,12 @@ class DQNAgent(Agent):
         if not valid_actions:
             return None
         action = self.select_action(state, valid_actions, game_state.move_type)
-        return map_action_to_game(game_state, action.numpy()[0][0])
+        return map_action_to_game(game_state, action.cpu().numpy()[0][0])
 
-    def train(self, env, num_episodes=1000):
+    def train(self, player1, player2, num_episodes=1000):
         for episode in range(num_episodes):
-            new_env = GameState(copy.deepcopy(env.player1), copy.deepcopy(env.player2), MoveType.PLACE_PIECE, player_turn=1)
-            state = get_state_vector(env)
+            new_env = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
+            state = get_state_vector(new_env)
             done = False
             while not done:
                 if new_env.curr_player_turn == 2:  # DQN agent's turn
@@ -219,44 +221,43 @@ class DQNAgent(Agent):
                         break
                     action = self.select_action(state, valid_actions, new_env.move_type)
 
-                    # Map action to the game's move
-                    action_tuple = map_action_to_game(new_env, action.numpy()[0][0])
+                    action_tuple = map_action_to_game(new_env, action.cpu().numpy()[0][0])
 
-                    # Generate the new state
                     next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, action_tuple)
 
-                    # Get the reward and check if the game is done
                     reward, done = calculate_reward(next_state)
-                    reward = torch.tensor([reward], dtype=torch.float32)
+                    reward = torch.tensor([reward], device=device, dtype=torch.float32)
 
                     next_state_tensor = get_state_vector(next_state) if not done else None
 
-                    # Store the transition in memory
-                    self.memory.push(state, action, next_state_tensor, reward)
+                    if action.shape == torch.Size([1, 1]):
+                        self.memory.push(state, torch.tensor([[action.item()]]), next_state_tensor, reward)
+                    elif action.shape == torch.Size([1, 1, 2]):
+                        self.memory.push(state,  torch.tensor([[action.view(-1)[1].item()]]), next_state_tensor, reward)
 
-                    # Move to the next state
                     new_env = next_state
                     state = next_state_tensor
 
-                    # Perform optimization
                     self.optimize_model()
                 else:  # Opponent's turn
-                    # Opponent takes an action
-                    opponent_action = opponent_select_action(env)
+                    opponent_action = opponent_select_action(new_env)
                     if opponent_action is None:
                         break
-                    opponent_action_tuple = map_action_to_game(env, opponent_action.numpy()[0][0])
-                    next_state = env.generate_new_state_successor(env.curr_player_turn, opponent_action_tuple)
+                    opponent_action_tuple = map_action_to_game(new_env, opponent_action.cpu().numpy()[0][0])
+                    next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, opponent_action_tuple)
 
-                    # Move to the next state
-                    env = next_state
+                    new_env = next_state
                     state = get_state_vector(next_state)
 
-                    # Check if the game is over
                     _, done = calculate_reward(next_state)
             # Update the target network at the specified interval
-            if episode % self.target_update == 0:
-                self.target_net.load_state_dict(self.policy_net.state_dict())
+            target_net_state_dict = self.target_net.state_dict()
+            policy_net_state_dict = self.policy_net.state_dict()
+            for key in policy_net_state_dict:
+                target_net_state_dict[key] = (policy_net_state_dict[key] * self.tau +
+                                              target_net_state_dict[key] * (1 - self.tau))
+            self.target_net.load_state_dict(target_net_state_dict)
+            print(f"finished episode {episode + 1}")
 
     def evaluation_function(self, game_state):
         pass
