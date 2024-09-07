@@ -1,13 +1,13 @@
 import copy
 
 from colorama import Fore
-from utils import strings
+from common import strings
 from exceptions.piece_not_exist import PieceNotExistException
 from src.move import Move, MoveType
 from enum import Enum
 from exceptions.uncorrelated_piece_color_exception import UnCorrelatedPieceColor
 from src.piece import Piece
-from utils.utils import move_performed_a_mill, display_board
+from common.utils import move_performed_a_mill, display_board
 
 NUM_OF_ROWS = 8
 NUM_OF_COLS = 3
@@ -228,3 +228,8 @@ class GameState:
         if player_number == 1:
             return self.player1.move_type
         return self.player2.move_type
+
+    def get_player_number(self, player_color):
+        if player_color == self.player1.get_player_color():
+            return 1
+        return 2

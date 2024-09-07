@@ -179,7 +179,7 @@ class DQNAgent(Agent):
         state_batch = torch.cat(batch.state).to(device)
         action_batch = torch.cat(batch.action).to(device)
         reward_batch = torch.cat(batch.reward).to(device)
-        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)),device=device,
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device,
                                       dtype=torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None]).to(device)
 
@@ -251,7 +251,7 @@ class DQNAgent(Agent):
                     if action.shape == torch.Size([1, 1]):
                         self.memory.push(state, torch.tensor([[action.item()]]), next_state_tensor, reward)
                     elif action.shape == torch.Size([1, 1, 2]):
-                        self.memory.push(state,  torch.tensor([[action.view(-1)[1].item()]]), next_state_tensor, reward)
+                        self.memory.push(state, torch.tensor([[action.view(-1)[1].item()]]), next_state_tensor, reward)
 
                     new_env = next_state
                     state = next_state_tensor

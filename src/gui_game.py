@@ -3,10 +3,13 @@ import pygame
 from src.piece import Piece
 from src.game_state import GameState, CellState
 from src.game_state import MoveType
-from utils.utils import *
+from common.utils import *
 from exceptions.piece_not_exist import PieceNotExistException
 from src.game_state import NUM_OF_ROWS, NUM_OF_COLS
 
+BACKGROUND_COLOR = (254, 216, 177)
+GAME_OVER_BUTTONS_COLOR = (134, 84, 57)
+GAME_OVER_TEXT_COLOR = (175, 143, 111)
 # Load and resize images
 black_piece_img = pygame.image.load('images/light_black_piece.png')
 white_piece_img = pygame.image.load('images/beige_piece.png')
@@ -20,7 +23,9 @@ background_img = pygame.transform.scale(background_img, GUI_WINDOW_SIZE)
 
 class GuiGame:
     def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game,
-                 game_manager):
+                 game_manager, delay_between_moves=0, num_of_games=1):
+        self.num_of_games = num_of_games
+        self.delay_between_moves = delay_between_moves
         self.game_manager = game_manager
         self.iterations_to_wait_after_computer_played = ITERATIONS_TO_WAIT
         self.ai_selected_position = None
@@ -54,21 +59,70 @@ class GuiGame:
     def run(self):
         self.game_loop()
         winner = self.get_game_result()
-        winner_announcement = WINNER_ANNOUNCEMENT_TEMPLATE.format(
-            color=winner.player_color.color,
-            name=winner.name,
-            reset=Style.RESET_ALL
-        )
-        win_score = RESULT.format(
-            color=Fore.LIGHTYELLOW_EX,
-            num_pieces_left=winner.get_num_of_pieces_on_board(),
-            reset=Style.RESET_ALL,
-            other_color=winner.player_color.color
-        )
-        print(winner_announcement + '\n' + win_score)
+        if self.num_of_games > 1:
+            print("The Winner is " + winner.name)
+            return self.game_state.get_player_number(winner.get_player_color())
+        if winner:
+            self.display_game_over(winner)
 
     def quit(self):
         pass
+
+    def display_game_over(self, winner):
+        screen = self.screen
+        game_over_font1 = pygame.font.SysFont('Cooper Black', 64)
+        game_over_font2 = pygame.font.SysFont('Segoe UI Emoji', 64)
+        button_font = pygame.font.SysFont('Cooper Black', 32)
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+            def draw_button(text, x, y, w, h, color, hover_color, action=None):
+                mouse = pygame.mouse.get_pos()
+                click = pygame.mouse.get_pressed()
+                if x + w > mouse[0] > x and y + h > mouse[1] > y:
+                    pygame.draw.rect(screen, hover_color, (x, y, w, h))
+                    if click[0] == 1 and action:
+                        time.sleep(0.1)
+                        action()
+                else:
+                    pygame.draw.rect(screen, color, (x, y, w, h))
+
+                text_surface = button_font.render(text, True, GAME_OVER_TEXT_COLOR)
+                text_rect = text_surface.get_rect(center=(x + w / 2, y + h / 2))
+                screen.blit(text_surface, text_rect)
+
+            def return_to_main_menu():
+                self.game_manager.opening_screen()
+
+            def exit_game():
+                pygame.quit()
+                exit()
+
+            winner_text1 = f"The Winner is"
+            game_over_text1 = game_over_font1.render(winner_text1, True, (0, 0, 0))
+            game_over_rect1 = game_over_text1.get_rect(center=(GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 5))
+            winner_text2 = f"🚀 {winner.name} 🚀"
+            game_over_text2 = game_over_font2.render(winner_text2, True, (0, 0, 0))
+            game_over_rect2 = game_over_text2.get_rect(center=(GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 3))
+
+            screen.fill(BACKGROUND_COLOR)
+            screen.blit(game_over_text1, game_over_rect1)
+            screen.blit(game_over_text2, game_over_rect2)
+
+            # Button to go back to the main menu
+            draw_button("Main Menu", GUI_WINDOW_SIZE[0] // 2 - 125, GUI_WINDOW_SIZE[1] // 2 - 50,
+                        250, 60, GAME_OVER_BUTTONS_COLOR, BUTTON_HOVER_COLOR, return_to_main_menu)
+
+            # Button to exit the game
+            draw_button("Exit", GUI_WINDOW_SIZE[0] // 2 - 125, GUI_WINDOW_SIZE[1] // 2 + 50,
+                        250, 60, GAME_OVER_BUTTONS_COLOR, BUTTON_HOVER_COLOR, exit_game)
+
+            pygame.display.update()
 
     def game_loop(self):
 
@@ -86,7 +140,7 @@ class GuiGame:
                 self.update_gui(curr_player)
                 self.do_the_actual_piece_move(curr_player, self.ai_selected_position, player_color)
                 self.update_gui(curr_player)
-                time.sleep(GUI_TIME_TO_SLEEP)
+                time.sleep(self.delay_between_moves)
                 continue
 
             elif self.current_move_type == MoveType.PLACE_PIECE:
@@ -141,7 +195,7 @@ class GuiGame:
             if curr_player.is_computer_player:
                 self.text_display = f"{curr_player.name} will now select a position for new piece"
                 self.update_gui(curr_player)
-                time.sleep(GUI_TIME_TO_SLEEP)
+                time.sleep(self.delay_between_moves)
                 self.iterations_to_wait_after_computer_played = ITERATIONS_TO_WAIT
             self.num_of_pieces_left_to_provide -= 1
             self.player_1_turn = not self.player_1_turn
@@ -179,7 +233,7 @@ class GuiGame:
             if curr_player.is_computer_player:
                 self.text_display = f"{curr_player.name} will now select a piece to move"
                 self.update_gui(curr_player)
-                time.sleep(GUI_TIME_TO_SLEEP)
+                time.sleep(self.delay_between_moves)
                 prev_pos = desired_position[0]
                 new_pos = desired_position[1]
                 self.text_display = f"{curr_player.name} selected the piece at location {prev_pos}"
@@ -224,7 +278,7 @@ class GuiGame:
 
     def do_the_actual_piece_move(self, curr_player, desired_position, player_color):
         if curr_player.is_computer_player:
-            time.sleep(GUI_TIME_TO_SLEEP)
+            time.sleep(self.delay_between_moves)
         curr_player.handle_piece_movement_action(
             position_of_desired_piece_to_move=self.selected_piece_to_move_pos,
             new_position=desired_position,
@@ -271,7 +325,7 @@ class GuiGame:
             if curr_player.is_computer_player:
                 self.text_display = f"😱😱 {curr_player.name} will now select a piece of yours to remove! 💀"
                 self.update_gui(curr_player)
-                time.sleep(GUI_TIME_TO_SLEEP)
+                time.sleep(self.delay_between_moves)
                 self.iterations_to_wait_after_computer_played = ITERATIONS_TO_WAIT
 
             self.game_state.update_board(prev_position=opponent_remove_location)
