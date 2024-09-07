@@ -1,6 +1,6 @@
 from src.player import Player
 from src.move import MoveType
-from utils.strings import *
+from common.strings import *
 
 
 def get_valid_input(prompt, validation_func, validation_list, prev_input=None, empty_cells=None):

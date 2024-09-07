@@ -1,9 +1,9 @@
-from utils import strings
+from common import strings
 
 from src.piece import Piece
 from src.game_state import GameState
 from src.game_state import MoveType
-from utils.utils import move_performed_a_mill, display_board
+from common.utils import move_performed_a_mill, display_board
 from exceptions.piece_not_exist import PieceNotExistException
 from colorama import Style, Fore
 

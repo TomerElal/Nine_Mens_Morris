@@ -16,3 +16,6 @@ class Agent(ABC):
     @abstractmethod
     def evaluation_function(self, game_state):
         raise NotImplementedError()
+
+    def __init__(self, player_number=1):
+        self.player_number = player_number

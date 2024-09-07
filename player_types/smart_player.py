@@ -1,10 +1,10 @@
 import random
 
-import utils.utils
+import common.utils
 from src.player import Player
 from src.move import MoveType
-from utils.strings import *
-from utils.utils import perform_placement_or_remove_action_to_console, perform_move_action_to_console
+from common.strings import *
+from common.utils import perform_placement_or_remove_action_to_console, perform_move_action_to_console
 from src.game_state import CellState
 
 
@@ -13,8 +13,8 @@ def check_if_opponent_can_perform_a_mill(player_color, state, type_of_required_a
     for move in opponent_poss_moves:
         new_piece_location = move[1] if (state.player1.num_of_pieces_left_to_place +
                                          state.player2.num_of_pieces_left_to_place == 0) else move
-        existed_piece_in_the_possible_mill = utils.utils.move_performed_a_mill(new_piece_location, state,
-                                                                               state.get_opponent_color())
+        existed_piece_in_the_possible_mill = common.utils.move_performed_a_mill(new_piece_location, state,
+                                                                                state.get_opponent_color())
         if existed_piece_in_the_possible_mill:
             return existed_piece_in_the_possible_mill if type_of_required_action == MoveType.REMOVE_OPPONENT_PIECE \
                 else new_piece_location
@@ -27,7 +27,7 @@ def check_if_smart_player_can_perform_a_mill(player_color, state, smart_player_p
         if state.player1.num_of_pieces_left_to_place + state.player2.num_of_pieces_left_to_place == 0:
             new_pos = action[1]
             state.set_cell_state(action[0], CellState.EMPTY)
-        can_perform_a_mill = utils.utils.move_performed_a_mill(new_pos, state, player_color)
+        can_perform_a_mill = common.utils.move_performed_a_mill(new_pos, state, player_color)
         if state.player1.num_of_pieces_left_to_place + state.player2.num_of_pieces_left_to_place == 0:
             state.set_cell_state(action[0], player_color)
         if can_perform_a_mill:

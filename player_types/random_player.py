@@ -2,8 +2,8 @@ import random
 
 from src.player import Player
 from src.move import MoveType
-from utils.strings import *
-from utils.utils import perform_placement_or_remove_action_to_console, perform_move_action_to_console
+from common.strings import *
+from common.utils import perform_placement_or_remove_action_to_console, perform_move_action_to_console
 
 
 class RandomPlayer(Player):

@@ -4,15 +4,20 @@ import numpy as np
 
 from search_agents.base_agent import Agent, AgentType
 from src.move import Move, MoveType
+from common.utils import count_potential_mills
 
 
 class AlphaBetaAgent(Agent):
 
     def evaluation_function(self, game_state):
-        # TODO: Player1 should represent MAX agent.
-        return len(game_state.player1.pieces_on_board) - len(game_state.player2.pieces_on_board)
+        if self.player_number == 1:
+            score = len(game_state.player1.pieces_on_board) - len(game_state.player2.pieces_on_board)
+        else:
+            score = len(game_state.player2.pieces_on_board) - len(game_state.player1.pieces_on_board)
+        return 30 * score + count_potential_mills(game_state.player1.pieces_on_board)
 
-    def __init__(self, depth=2):
+    def __init__(self, player_number=1, depth=2):
+        super().__init__(player_number)
         self.search_depth = depth * 2
 
     def get_action(self, game_state):
@@ -31,10 +36,12 @@ class AlphaBetaAgent(Agent):
 
             if curr_agent == AgentType.MAX:
                 max_val = -np.inf
-                action_result = None
-                for player_action in curr_game_state.get_legal_actions(player_number=1):
+                legal_actions = curr_game_state.get_legal_actions(player_number=self.player_number)
+                action_result = None if not len(legal_actions) else legal_actions[0]
+                for player_action in legal_actions:
                     new_state_successor = (curr_game_state.
-                                           generate_new_state_successor(player_number=1, action=player_action))
+                                           generate_new_state_successor(player_number=self.player_number,
+                                                                        action=player_action))
                     next_agent = AgentType.MAX if (new_state_successor.move_type ==
                                                    MoveType.REMOVE_OPPONENT_PIECE) else AgentType.MIN
                     score = alpha_beta_algorithm(next_agent, new_state_successor, depth, alpha, beta)[0]
@@ -45,14 +52,16 @@ class AlphaBetaAgent(Agent):
                         break
                     if score > alpha:
                         alpha = score
+
                 return max_val, action_result
 
             if curr_agent == AgentType.MIN:
                 min_val = np.inf
                 action_result = None
-                for opponent_action in curr_game_state.get_legal_actions(player_number=2):
+                for opponent_action in curr_game_state.get_legal_actions(player_number=3 - self.player_number):
                     new_state_successor = (curr_game_state.
-                                           generate_new_state_successor(player_number=2, action=opponent_action))
+                                           generate_new_state_successor(player_number=3 - self.player_number,
+                                                                        action=opponent_action))
                     next_agent = AgentType.MIN if (new_state_successor.move_type ==
                                                    MoveType.REMOVE_OPPONENT_PIECE) else AgentType.MAX
                     score = alpha_beta_algorithm(next_agent, new_state_successor, depth, alpha, beta)[0]

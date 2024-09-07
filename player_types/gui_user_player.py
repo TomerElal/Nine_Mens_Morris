@@ -2,7 +2,7 @@ import pygame
 
 from src.player import Player
 from src.move import MoveType
-from utils.utils import get_piece_position_in_gui
+from common.utils import get_piece_position_in_gui
 
 
 class GuiUserPlayer(Player):

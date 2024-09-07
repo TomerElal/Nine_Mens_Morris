@@ -1,7 +1,7 @@
 from src import game_state
 
 from src.move import Move
-from utils.utils import compute_adjacent_cell_pos
+from common.utils import compute_adjacent_cell_pos
 
 
 class Piece:

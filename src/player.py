@@ -1,4 +1,4 @@
-from utils import utils, strings
+from common import utils, strings
 
 from src.move import MoveType
 from abc import ABC, abstractmethod

@@ -2,7 +2,7 @@ import time
 
 from src import game_state
 from src.move import Move
-from utils.strings import *
+from common.strings import *
 
 # Constants
 BOARD_COLOR = (245, 222, 179)
@@ -183,7 +183,7 @@ def compute_adjacent_cell_pos(given_location, direction=Move.UP):
             col = abs(((game_state.NUM_OF_ROWS - 1) - given_location[0]) - given_location[1])
             return row, col
         return given_location[0] - 1, given_location[1]
-    else:
+    else:  # direction=Move.DOWN
         if given_location[0] in [0, 1, 2] and given_location[1] != 1:
             row = game_state.MIDDLE_ROW_LEFT_SIDE if given_location[1] == 0 else game_state.MIDDLE_ROW_RIGHT_SIDE
             col = abs(given_location[0] - given_location[1])
@@ -194,6 +194,29 @@ def compute_adjacent_cell_pos(given_location, direction=Move.UP):
             return 5 + given_location[1], game_state.NUM_OF_COLS - 1
         return given_location[0] + 1, given_location[1]
 
+
+def piece_has_an_adjacent_piece_with_same_color(piece_pos, positions_set):
+    # Check horizontally.
+    if (piece_pos[0], piece_pos[0] + 1) in positions_set or (piece_pos[0], piece_pos[0] - 1) in positions_set:
+        return True
+
+    # Check vertically.
+    adjacent_pos_from_above = compute_adjacent_cell_pos(piece_pos, Move.UP)
+    adjacent_pos_from_bottom = compute_adjacent_cell_pos(piece_pos, Move.DOWN)
+    if adjacent_pos_from_above in positions_set or adjacent_pos_from_bottom in positions_set:
+        return True
+
+    return False
+
+
+def count_potential_mills(pieces_on_board):
+    count = 0
+    positions_set = {piece.position for piece in pieces_on_board}
+    for piece_pos in list(positions_set):  # Use list() to avoid modifying the set while iterating
+        if piece_has_an_adjacent_piece_with_same_color(piece_pos, positions_set):
+            count += 1
+        positions_set.remove(piece_pos)
+    return count
 
 def display_board(visual_board):
     # Create a visual representation of the Nine Men's Morris board
