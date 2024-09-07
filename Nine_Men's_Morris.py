@@ -72,7 +72,9 @@ class GameManager:
             "User player vs Random player",
             "AI player vs Smart player",
             "MCTS player vs User player",
-            "DQN player vs User player"
+            "MCTS player vs Smart player",
+            "DQN player vs User player",
+            "DQN player vs Smart player"
         ]
 
         def draw_text(text, position, color, font_size=32):
@@ -152,6 +154,13 @@ class GameManager:
                                                  is_computer_player=True)
             self.start_game()
 
+        def start_smart_vs_DQN():
+            self.player_1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE,
+                                        is_computer_player=True, is_gui_game=True)
+            self.player_2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
+                                                 is_computer_player=True)
+            self.start_game()
+
         def start_user_vs_DQN():
             self.player_1 = GuiUserPlayer(PLAYER1, NUM_OF_PIECES, CellState.WHITE, is_computer_player=False)
             self.player_2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent,
@@ -163,7 +172,7 @@ class GameManager:
             exit()
 
         actions = [start_user_vs_user, start_user_vs_ai, start_user_vs_smart, start_user_vs_random, start_ai_vs_random,
-                   start_user_vs_mcts, start_user_vs_DQN, start_smart_vs_mcts]
+                   start_user_vs_mcts, start_smart_vs_mcts, start_user_vs_DQN, start_smart_vs_DQN]
 
         running = True
         while running:
@@ -187,20 +196,24 @@ class GameManager:
 def train_model():
     player1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE, is_computer_player=True, is_gui_game=False)
     player2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent, is_computer_player=True)
-    num_episodes = 50
+    num_episodes = 1000
     if torch.cuda.is_available():
         num_episodes = 1000
 
     dqn_agent.train(player1, player2, num_episodes)
+    dqn_agent.save_model("my_dqn_model.pth")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Train or test the Nine Men's Morris DQN agent.")
     parser.add_argument('--train', action='store_true', help="Train the DQN agent")
+    parser.add_argument('--load', action='store_true', help="Load the DQN agent")
     args = parser.parse_args()
     if args.train:
         train_model()
         print("Training complete!")
+    if args.load:
+        dqn_agent.load_model("my_dqn_model.pth")
 
     game_manager = GameManager(gui_display=True)
     game_manager.opening_screen()

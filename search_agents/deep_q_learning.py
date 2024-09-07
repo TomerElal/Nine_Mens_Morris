@@ -79,6 +79,10 @@ def get_state_vector(game_state):
 
 
 def map_action_to_game(game_state, action_index):
+    if action_index.numel() == 1:
+        action_index = action_index.item()
+    else:
+        action_index = action_index.tolist()
     if game_state.move_type == MoveType.PLACE_PIECE:
         # For placing pieces, action_index corresponds to the board position
         row = action_index // NUM_OF_COLS
@@ -111,18 +115,11 @@ def calculate_reward(game_state):
         return 0.0, False
 
 
-def opponent_select_action(game_state):
-    valid_actions = get_valid_actions(game_state)
-    if not valid_actions:
-        return None
-    return torch.tensor([[random.choice(valid_actions)]], dtype=torch.long)
-
-
 class DQNAgent(Agent):
     def __init__(self, state_size, action_size,
-                 batch_size=128, gamma=0.99, epsilon_start=0.9,
-                 epsilon_end=0.05, epsilon_decay=1000, tau=0.005,
-                 memory_size=10000, lr=1e-3):
+                 batch_size=128, gamma=0.99, epsilon_start=1,
+                 epsilon_end=0.01, epsilon_decay=5000, tau=1e-3,
+                 memory_size=100000, lr=1e-4, model_save_path='dqn_model.pth'):
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = gamma
@@ -131,6 +128,7 @@ class DQNAgent(Agent):
         self.epsilon_decay = epsilon_decay
         self.batch_size = batch_size
         self.tau = tau
+        self.model_save_path = model_save_path
 
         # Initialize the network
         self.policy_net = DQN(state_size, action_size).to(device)
@@ -140,7 +138,6 @@ class DQNAgent(Agent):
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=lr, amsgrad=True)
         self.criterion = nn.SmoothL1Loss()
         self.steps_done = 0
-        # Initialize replay buffer
         self.memory = ReplayMemory(memory_size)
 
     def select_action(self, state, valid_actions, move_type):
@@ -201,13 +198,34 @@ class DQNAgent(Agent):
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
+    def save_model(self, filepath=None):
+        if filepath is None:
+            filepath = self.model_save_path
+        torch.save({
+            'policy_net_state_dict': self.policy_net.state_dict(),
+            'target_net_state_dict': self.target_net.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'steps_done': self.steps_done,
+        }, filepath)
+        print(f"Model saved to {filepath}")
+
+    def load_model(self, filepath=None):
+        if filepath is None:
+            filepath = self.model_save_path
+        checkpoint = torch.load(filepath, map_location=device)
+        self.policy_net.load_state_dict(checkpoint['policy_net_state_dict'])
+        self.target_net.load_state_dict(checkpoint['target_net_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.steps_done = checkpoint['steps_done']
+        print(f"Model loaded from {filepath}")
+
     def get_action(self, game_state):
         state = get_state_vector(game_state)
         valid_actions = get_valid_actions(game_state)
         if not valid_actions:
             return None
         action = self.select_action(state, valid_actions, game_state.move_type)
-        return map_action_to_game(game_state, action.cpu().numpy()[0][0])
+        return map_action_to_game(game_state, action.view(-1))
 
     def train(self, player1, player2, num_episodes=1000):
         for episode in range(num_episodes):
@@ -221,7 +239,7 @@ class DQNAgent(Agent):
                         break
                     action = self.select_action(state, valid_actions, new_env.move_type)
 
-                    action_tuple = map_action_to_game(new_env, action.cpu().numpy()[0][0])
+                    action_tuple = map_action_to_game(new_env, action.view(-1))
 
                     next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, action_tuple)
 
@@ -240,11 +258,8 @@ class DQNAgent(Agent):
 
                     self.optimize_model()
                 else:  # Opponent's turn
-                    opponent_action = opponent_select_action(new_env)
-                    if opponent_action is None:
-                        break
-                    opponent_action_tuple = map_action_to_game(new_env, opponent_action.cpu().numpy()[0][0])
-                    next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, opponent_action_tuple)
+                    opponent_action = new_env.player1.get_action(new_env, new_env.move_type)
+                    next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, opponent_action)
 
                     new_env = next_state
                     state = get_state_vector(next_state)
