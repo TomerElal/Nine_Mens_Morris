@@ -2,7 +2,7 @@
 # Nine Men's Morris
 
 ## Introduction
-Welcome to Nine Men's Morris, a classic strategy board game dating back to the Roman Empire. This game is designed for two players, aiming to form 'mills'—a line of three of their pieces. It’s a game of strategy and tactical skill, now available with advanced AI options!
+Welcome to Nine Men's Morris, a classic strategy board game dating back to the Roman Empire. This game is designed for two players, aiming to form 'mills', that is a line of three of their pieces. It’s a game of strategy and tactical skill, now available with advanced AI options!
 
 ## Game Rules
 
