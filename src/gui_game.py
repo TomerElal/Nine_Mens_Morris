@@ -24,6 +24,7 @@ background_img = pygame.transform.scale(background_img, GUI_WINDOW_SIZE)
 class GuiGame:
     def __init__(self, player_1, player_2, initial_state, num_of_initial_pieces, player_1_starts_the_game,
                  game_manager, delay_between_moves=0, num_of_games=1):
+        self.curr_num_of_moves = 0
         self.num_of_games = num_of_games
         self.delay_between_moves = delay_between_moves
         self.game_manager = game_manager
@@ -58,21 +59,23 @@ class GuiGame:
 
     def run(self):
         self.game_loop()
-        winner = self.get_game_result()
+        winner, score = self.get_game_result()
         if self.num_of_games > 1:
-            print("The Winner is " + winner.name)
-            return self.game_state.get_player_number(winner.get_player_color())
+            print("The Winner is " + winner.name + f" with score of"
+                                                   f" {score} & {len(winner.pieces_on_board)} pieces left.")
+            return self.game_state.get_player_number(winner.get_player_color()), winner
         if winner:
-            self.display_game_over(winner)
+            self.display_game_over(winner, score)
 
     def quit(self):
         pass
 
-    def display_game_over(self, winner):
+    def display_game_over(self, winner, score):
         screen = self.screen
         game_over_font1 = pygame.font.SysFont('Cooper Black', 64)
         game_over_font2 = pygame.font.SysFont('Segoe UI Emoji', 64)
         button_font = pygame.font.SysFont('Cooper Black', 32)
+        score_font = pygame.font.SysFont('Cooper Black', 48)
 
         running = True
         while running:
@@ -87,7 +90,7 @@ class GuiGame:
                 if x + w > mouse[0] > x and y + h > mouse[1] > y:
                     pygame.draw.rect(screen, hover_color, (x, y, w, h))
                     if click[0] == 1 and action:
-                        time.sleep(0.1)
+                        time.sleep(0.15)
                         action()
                 else:
                     pygame.draw.rect(screen, color, (x, y, w, h))
@@ -109,10 +112,14 @@ class GuiGame:
             winner_text2 = f"🚀 {winner.name} 🚀"
             game_over_text2 = game_over_font2.render(winner_text2, True, (0, 0, 0))
             game_over_rect2 = game_over_text2.get_rect(center=(GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 3))
+            winner_text3 = f"Score:  {score}"
+            game_over_text3 = score_font.render(winner_text3, True, (0, 0, 0))
+            game_over_rect3 = game_over_text3.get_rect(center=(GUI_WINDOW_SIZE[0] // 2, GUI_WINDOW_SIZE[1] // 1.2))
 
             screen.fill(BACKGROUND_COLOR)
             screen.blit(game_over_text1, game_over_rect1)
             screen.blit(game_over_text2, game_over_rect2)
+            screen.blit(game_over_text3, game_over_rect3)
 
             # Button to go back to the main menu
             draw_button("Main Menu", GUI_WINDOW_SIZE[0] // 2 - 125, GUI_WINDOW_SIZE[1] // 2 - 50,
@@ -206,6 +213,7 @@ class GuiGame:
             self.place_piece_in_gui(desired_piece_position[0], desired_piece_position[1], player_color)
             self.game_state.update_board(new_position=desired_piece_position, piece_color=player_color)
             if player_color == CellState.WHITE:
+                self.curr_num_of_moves += 1
                 self.player_1_pieces -= 1
             else:
                 self.player_2_pieces -= 1
@@ -279,6 +287,8 @@ class GuiGame:
     def do_the_actual_piece_move(self, curr_player, desired_position, player_color):
         if curr_player.is_computer_player:
             time.sleep(self.delay_between_moves)
+        if player_color == CellState.WHITE:
+            self.curr_num_of_moves += 1
         curr_player.handle_piece_movement_action(
             position_of_desired_piece_to_move=self.selected_piece_to_move_pos,
             new_position=desired_position,
@@ -346,7 +356,7 @@ class GuiGame:
         return curr_player, other_player
 
     def get_game_result(self):
-        return self.winner
+        return self.winner, (len(self.winner.pieces_on_board) * 100) - self.curr_num_of_moves
 
     def place_piece_in_gui(self, row, col, piece_color):
         position = get_piece_position_in_gui(row, col)
