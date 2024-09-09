@@ -9,7 +9,8 @@ from search_agents.base_agent import Agent, AgentType
 from src.move import Move, MoveType
 from src.game_state import GameState, CellState, NUM_OF_ROWS, NUM_OF_COLS
 import copy
-
+from common.utils import move_performed_a_mill
+num_wins = 0
 device = torch.device(
     "cuda" if torch.cuda.is_available() else
     "mps" if torch.backends.mps.is_available() else
@@ -105,21 +106,41 @@ def map_action_to_game(game_state, action_index):
         return row, col
 
 
-def calculate_reward(game_state):
+def calculate_reward(game_state, num_steps, action, move_type, opponent_move_type, player_color, opponent_color):
+    global num_wins
     if game_state.is_game_over():
         if game_state.player1.is_lost_game(game_state, game_state.move_type):
-            return 1.0, True
+            num_wins += 1
+            print("winner")
+            return 100, True
         elif game_state.player2.is_lost_game(game_state, game_state.move_type):
-            return -1.0, True
+            reward = -100
+            reward -= (1 / num_steps) * 10
+            return reward, True
     else:
-        return 0.0, False
+        reward = 0.0
+        new_pos = action
+        if move_type == MoveType.MOVE_PIECE:
+            prev_pos, new_pos = action
+        is_mill = move_performed_a_mill(new_pos, game_state, player_color)
+        block_opponent_mill = move_performed_a_mill(new_pos, game_state, opponent_color)
+        if is_mill:
+            reward += 50
+        if block_opponent_mill:
+            reward += 10
+        if move_type == MoveType.REMOVE_OPPONENT_PIECE:
+            reward += 15
+        if opponent_move_type == MoveType.REMOVE_OPPONENT_PIECE:
+            reward -= 30
+        if not is_mill and not block_opponent_mill:
+            reward -= 5
+        return reward, False
 
 
 class DQNAgent(Agent):
-    def __init__(self, state_size, action_size,
-                 batch_size=128, gamma=0.99, epsilon_start=1,
-                 epsilon_end=0.01, epsilon_decay=5000, tau=1e-3,
-                 memory_size=100000, lr=1e-4, model_save_path='dqn_model.pth'):
+    def __init__(self, state_size, action_size, batch_size=128, gamma=0.99, epsilon_start=1, epsilon_end=0.01,
+                 epsilon_decay=5000, tau=1e-3, memory_size=100000, lr=1e-4, model_save_path='dqn_model---.pth'):
+        super().__init__()
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = gamma
@@ -136,7 +157,7 @@ class DQNAgent(Agent):
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=lr, amsgrad=True)
-        self.criterion = nn.SmoothL1Loss()
+        self.criterion = nn.MSELoss()
         self.steps_done = 0
         self.memory = ReplayMemory(memory_size)
 
@@ -232,8 +253,11 @@ class DQNAgent(Agent):
             new_env = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
             state = get_state_vector(new_env)
             done = False
+            num_steps = 0
+            opponent_move_type = MoveType.PLACE_PIECE
             while not done:
                 if new_env.curr_player_turn == 2:  # DQN agent's turn
+                    num_steps += 1
                     valid_actions = get_valid_actions(new_env)
                     if not valid_actions:
                         break
@@ -243,7 +267,9 @@ class DQNAgent(Agent):
 
                     next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, action_tuple)
 
-                    reward, done = calculate_reward(next_state)
+                    reward, done = calculate_reward(next_state, num_steps, action_tuple, new_env.move_type,
+                                                    opponent_move_type,
+                                                    CellState.BLACK, CellState.WHITE)
                     reward = torch.tensor([reward], device=device, dtype=torch.float32)
 
                     next_state_tensor = get_state_vector(next_state) if not done else None
@@ -259,12 +285,13 @@ class DQNAgent(Agent):
                     self.optimize_model()
                 else:  # Opponent's turn
                     opponent_action = new_env.player1.get_action(new_env, new_env.move_type)
+                    opponent_move_type = new_env.move_type
                     next_state = new_env.generate_new_state_successor(new_env.curr_player_turn, opponent_action)
+
+                    done = new_env.is_game_over()
 
                     new_env = next_state
                     state = get_state_vector(next_state)
-
-                    _, done = calculate_reward(next_state)
             # Update the target network at the specified interval
             target_net_state_dict = self.target_net.state_dict()
             policy_net_state_dict = self.policy_net.state_dict()

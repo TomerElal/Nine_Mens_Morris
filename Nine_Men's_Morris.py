@@ -246,13 +246,12 @@ class GameManager:
 def train_model():
     player1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE, is_computer_player=True, is_gui_game=False)
     player2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent, is_computer_player=True)
-    num_episodes = 50
+    num_episodes = 600
     if torch.cuda.is_available():
         num_episodes = 1000
     print(num_episodes)
     dqn_agent.train(player1, player2, num_episodes)
-    torch.save(dqn_agent.policy_net.state_dict(), MODEL_PATH)
-    print(f"Model saved to {MODEL_PATH}")
+    dqn_agent.save_model(MODEL_PATH)
 
 
 def get_player_by_type(player_type, color):
@@ -288,11 +287,11 @@ def main():
     args = parser.parse_args()
 
     # Handle DQN training or loading
-    # if args.train:
-    #     train_model()
-    #     print("Training complete!")
-    # elif args.load:
-    #     load_dqn_agent()
+    if args.train:
+        train_model()
+        print("Training complete!")
+    elif args.load:
+        dqn_agent.load_model(MODEL_PATH)
 
     # If arguments for player types are provided, initialize the game with those
     if args.player1 and args.player2:
