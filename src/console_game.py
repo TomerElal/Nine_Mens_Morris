@@ -35,6 +35,7 @@ class ConsoleGame:
             other_color=winner.player_color.color
         )
         print(winner_announcement + '\n' + win_score)
+        return self.game_state.get_player_number(winner.get_player_color()), winner
 
     def quit(self):
         pass

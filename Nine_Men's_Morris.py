@@ -1,3 +1,4 @@
+import csv
 import os
 import pygame
 import argparse
@@ -62,12 +63,29 @@ class GameManager:
         self.num_of_games = num_of_games
         self.initial_state = GameState(player_1, player_2, MoveType.PLACE_PIECE)
         self.player_1_starts = player_1_starts_the_game
+        self.csv_file_name = f"{player_1.name}_vs_{player_2.name}_{num_of_games}_games.csv"
+
+        # Initialize CSV file with headers
+        self.init_csv_file()
+
+    def init_csv_file(self):
+        """Initialize the CSV file with column headers."""
+        if not os.path.exists(self.csv_file_name):
+            with open(self.csv_file_name, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Winner", "PiecesLeft", "TotalMoves", "Score"])
+
+    def save_results_to_csv(self, winner_player_number, num_of_pieces_left_of_winner, num_of_moves_in_the_game, score):
+        """Save the game results to the CSV file."""
+        with open(self.csv_file_name, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([winner_player_number, num_of_pieces_left_of_winner, num_of_moves_in_the_game, score])
 
     def start_game(self):
         for _ in range(self.num_of_games):
             self.run_single_game()
 
-            # Init players attributes
+            # Reinitialize player attributes after each game
             self.player_1.pieces_on_board = set()
             self.player_2.pieces_on_board = set()
             self.player_1.move_type = self.player_2.move_type = MoveType.PLACE_PIECE
@@ -81,7 +99,15 @@ class GameManager:
         else:
             new_game = ConsoleGame(self.player_1, self.player_2, self.initial_state,
                                    self.num_of_pieces_in_game, self.player_1_starts)
-        new_game.run()
+
+        # Run the game and get the results
+        winner_player_number, winner = new_game.run()
+        num_of_pieces_left_of_winner = len(winner.pieces_on_board)
+        num_of_moves_in_the_game = new_game.curr_num_of_moves
+        score = (num_of_pieces_left_of_winner * 100) - num_of_moves_in_the_game
+
+        # Save results to CSV file
+        self.save_results_to_csv(winner_player_number, num_of_pieces_left_of_winner, num_of_moves_in_the_game, score)
 
     def opening_screen(self):
         pygame.init()
