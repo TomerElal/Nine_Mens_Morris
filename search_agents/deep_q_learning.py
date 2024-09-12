@@ -277,45 +277,6 @@ class DQNAgent(Agent):
         action = self.select_action(state, valid_actions, game_state.move_type)
         return map_action_to_game(game_state, action.view(-1))
 
-    def evaluate_agent(self, player1, player2, num_games=50):
-        wins = 0
-        total_rewards = 0
-        for _ in range(num_games):
-            game_state = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
-
-            done = False
-            total_reward = 0
-            num_steps = 0
-            opponent_move_type = MoveType.PLACE_PIECE
-            while not done:
-                if game_state.curr_player_turn == 2:
-                    num_steps += 1
-                    action = self.get_action(game_state)
-
-                else:
-                    opponent_move_type = game_state.move_type
-                    action = game_state.player1.get_action(game_state, game_state.move_type)
-
-                next_state = game_state.generate_new_state_successor(game_state.curr_player_turn, action)
-
-                # Update the total reward and check if the game is over
-                if game_state.curr_player_turn == 2:
-                    reward, done = calculate_reward(game_state, num_steps, action, game_state.move_type,
-                                                    opponent_move_type, CellState.BLACK, CellState.WHITE)
-                    total_reward += reward
-                else:
-                    done = game_state.is_game_over()
-                game_state = next_state
-
-            # Track wins and total rewards
-            if game_state.is_game_over() and game_state.player1.is_lost_game(game_state, game_state.move_type):
-                wins += 1
-            total_rewards += total_reward
-
-        avg_reward = total_rewards / num_games
-        win_rate = wins / num_games
-        print(f"Evaluation Results: Win rate = {win_rate * 100:.2f}%, Avg reward = {avg_reward:.2f}")
-
     def train(self, player1, player2, num_episodes=1000):
         for episode in range(num_episodes):
             new_env = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
@@ -364,9 +325,6 @@ class DQNAgent(Agent):
             if self.steps_done % self.target_update == 0:
                 self.target_net.load_state_dict(self.policy_net.state_dict())
 
-            # if episode % 500 == 0:
-            #     print(f"Evaluating after {episode} episodes...")
-            #     self.evaluate_agent(player1, player2, num_games=10)
             print(f"finished episode {episode + 1}")
 
     def evaluation_function(self, game_state):

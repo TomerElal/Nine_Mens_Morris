@@ -63,10 +63,11 @@ class GameManager:
         self.num_of_games = num_of_games
         self.initial_state = GameState(player_1, player_2, MoveType.PLACE_PIECE)
         self.player_1_starts = player_1_starts_the_game
-        self.csv_file_name = f"{player_1.name}_vs_{player_2.name}_{num_of_games}_games.csv"
+        if player_1 is not None and player_2 is not None:
+            self.csv_file_name = f"{player_1.name}_vs_{player_2.name}_{num_of_games}_games.csv"
 
-        # Initialize CSV file with headers
-        self.init_csv_file()
+            # Initialize CSV file with headers
+            self.init_csv_file()
 
     def init_csv_file(self):
         """Initialize the CSV file with column headers."""
