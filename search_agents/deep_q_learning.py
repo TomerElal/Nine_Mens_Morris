@@ -71,12 +71,6 @@ def get_valid_actions(game_state):
 
 
 def get_state_vector(game_state):
-    # board_state = []
-    # for row in game_state.board:
-    #     for cell in row:
-    #         board_state.append(cell.value)
-    # state_vector = board_state + [game_state.curr_player_turn, game_state.move_type.value]
-    # return torch.tensor([state_vector], device=device, dtype=torch.float32)
     player1_pieces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
     player2_pieces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
     empty_spaces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
