@@ -10,7 +10,7 @@ from src.move import Move, MoveType
 from src.game_state import GameState, CellState, NUM_OF_ROWS, NUM_OF_COLS
 import copy
 from common.utils import move_performed_a_mill
-num_wins = 0
+
 device = torch.device(
     "cuda" if torch.cuda.is_available() else
     "mps" if torch.backends.mps.is_available() else
@@ -71,12 +71,41 @@ def get_valid_actions(game_state):
 
 
 def get_state_vector(game_state):
-    board_state = []
-    for row in game_state.board:
-        for cell in row:
-            board_state.append(cell.value)
-    state_vector = board_state + [game_state.curr_player_turn, game_state.move_type.value]
-    return torch.tensor([state_vector], device=device, dtype=torch.float32)
+    # board_state = []
+    # for row in game_state.board:
+    #     for cell in row:
+    #         board_state.append(cell.value)
+    # state_vector = board_state + [game_state.curr_player_turn, game_state.move_type.value]
+    # return torch.tensor([state_vector], device=device, dtype=torch.float32)
+    player1_pieces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
+    player2_pieces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
+    empty_spaces = np.zeros((NUM_OF_ROWS, NUM_OF_COLS), dtype=np.float32)
+
+    # Fill the channels based on the board state
+    for row in range(NUM_OF_ROWS):
+        for col in range(NUM_OF_COLS):
+            cell = game_state.board[row][col]
+            if cell == CellState.WHITE:
+                player1_pieces[row, col] = 1.0
+            elif cell == CellState.BLACK:
+                player2_pieces[row, col] = 1.0
+            else:
+                empty_spaces[row, col] = 1.0
+
+    # Stack the channels to create a 3D tensor (3 channels, NUM_OF_ROWS, NUM_OF_COLS)
+    board_tensor = np.stack([player1_pieces, player2_pieces, empty_spaces])
+
+    # Convert the board tensor to a PyTorch tensor
+    board_tensor = torch.tensor(board_tensor, device=device, dtype=torch.float32)
+
+    # Create an additional feature vector for player turn and move type
+    additional_features = torch.tensor(
+        [[game_state.curr_player_turn, game_state.move_type.value]],
+        device=device,
+        dtype=torch.float32
+    )
+
+    return torch.cat((board_tensor.view(-1), additional_features.view(-1)), dim=0).unsqueeze(0)
 
 
 def map_action_to_game(game_state, action_index):
@@ -84,6 +113,7 @@ def map_action_to_game(game_state, action_index):
         action_index = action_index.item()
     else:
         action_index = action_index.tolist()
+
     if game_state.move_type == MoveType.PLACE_PIECE:
         # For placing pieces, action_index corresponds to the board position
         row = action_index // NUM_OF_COLS
@@ -107,11 +137,8 @@ def map_action_to_game(game_state, action_index):
 
 
 def calculate_reward(game_state, num_steps, action, move_type, opponent_move_type, player_color, opponent_color):
-    global num_wins
     if game_state.is_game_over():
         if game_state.player1.is_lost_game(game_state, game_state.move_type):
-            num_wins += 1
-            print("winner")
             return 100, True
         elif game_state.player2.is_lost_game(game_state, game_state.move_type):
             reward = -100
@@ -139,7 +166,8 @@ def calculate_reward(game_state, num_steps, action, move_type, opponent_move_typ
 
 class DQNAgent(Agent):
     def __init__(self, state_size, action_size, batch_size=128, gamma=0.99, epsilon_start=1, epsilon_end=0.01,
-                 epsilon_decay=5000, tau=1e-3, memory_size=100000, lr=1e-4, model_save_path='dqn_model---.pth'):
+                 epsilon_decay=2000, target_update=200, memory_size=100000, lr=1e-4,
+                 model_save_path='dqn_model.pth'):
         super().__init__()
         self.state_size = state_size
         self.action_size = action_size
@@ -148,13 +176,14 @@ class DQNAgent(Agent):
         self.epsilon_end = epsilon_end
         self.epsilon_decay = epsilon_decay
         self.batch_size = batch_size
-        self.tau = tau
+        self.target_update = target_update
         self.model_save_path = model_save_path
 
         # Initialize the network
         self.policy_net = DQN(state_size, action_size).to(device)
         self.target_net = DQN(state_size, action_size).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=lr, amsgrad=True)
         self.criterion = nn.MSELoss()
@@ -248,6 +277,45 @@ class DQNAgent(Agent):
         action = self.select_action(state, valid_actions, game_state.move_type)
         return map_action_to_game(game_state, action.view(-1))
 
+    def evaluate_agent(self, player1, player2, num_games=50):
+        wins = 0
+        total_rewards = 0
+        for _ in range(num_games):
+            game_state = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
+
+            done = False
+            total_reward = 0
+            num_steps = 0
+            opponent_move_type = MoveType.PLACE_PIECE
+            while not done:
+                if game_state.curr_player_turn == 2:
+                    num_steps += 1
+                    action = self.get_action(game_state)
+
+                else:
+                    opponent_move_type = game_state.move_type
+                    action = game_state.player1.get_action(game_state, game_state.move_type)
+
+                next_state = game_state.generate_new_state_successor(game_state.curr_player_turn, action)
+
+                # Update the total reward and check if the game is over
+                if game_state.curr_player_turn == 2:
+                    reward, done = calculate_reward(game_state, num_steps, action, game_state.move_type,
+                                                    opponent_move_type, CellState.BLACK, CellState.WHITE)
+                    total_reward += reward
+                else:
+                    done = game_state.is_game_over()
+                game_state = next_state
+
+            # Track wins and total rewards
+            if game_state.is_game_over() and game_state.player1.is_lost_game(game_state, game_state.move_type):
+                wins += 1
+            total_rewards += total_reward
+
+        avg_reward = total_rewards / num_games
+        win_rate = wins / num_games
+        print(f"Evaluation Results: Win rate = {win_rate * 100:.2f}%, Avg reward = {avg_reward:.2f}")
+
     def train(self, player1, player2, num_episodes=1000):
         for episode in range(num_episodes):
             new_env = GameState(copy.deepcopy(player1), copy.deepcopy(player2), MoveType.PLACE_PIECE, player_turn=1)
@@ -293,12 +361,12 @@ class DQNAgent(Agent):
                     new_env = next_state
                     state = get_state_vector(next_state)
             # Update the target network at the specified interval
-            target_net_state_dict = self.target_net.state_dict()
-            policy_net_state_dict = self.policy_net.state_dict()
-            for key in policy_net_state_dict:
-                target_net_state_dict[key] = (policy_net_state_dict[key] * self.tau +
-                                              target_net_state_dict[key] * (1 - self.tau))
-            self.target_net.load_state_dict(target_net_state_dict)
+            if self.steps_done % self.target_update == 0:
+                self.target_net.load_state_dict(self.policy_net.state_dict())
+
+            # if episode % 500 == 0:
+            #     print(f"Evaluating after {episode} episodes...")
+            #     self.evaluate_agent(player1, player2, num_games=10)
             print(f"finished episode {episode + 1}")
 
     def evaluation_function(self, game_state):

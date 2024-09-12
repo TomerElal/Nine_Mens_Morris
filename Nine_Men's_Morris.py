@@ -38,7 +38,7 @@ DELAY_BUTTON_HEIGHT = 40
 OPTIONS_BUTTON_WIDTH = 150
 OPTIONS_BUTTON_HEIGHT = 40
 
-dqn_agent = DQNAgent(state_size=26, action_size=24)
+dqn_agent = DQNAgent(state_size=74, action_size=24)
 
 
 # Init DQN agent with loading a saved model
@@ -272,9 +272,7 @@ class GameManager:
 def train_model():
     player1 = SmartPlayer(SMART_PLAYER, NUM_OF_PIECES, CellState.WHITE, is_computer_player=True, is_gui_game=False)
     player2 = GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, CellState.BLACK, dqn_agent, is_computer_player=True)
-    num_episodes = 600
-    if torch.cuda.is_available():
-        num_episodes = 1000
+    num_episodes = 2000
     print(num_episodes)
     dqn_agent.train(player1, player2, num_episodes)
     dqn_agent.save_model(MODEL_PATH)
