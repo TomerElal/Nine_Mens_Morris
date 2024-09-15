@@ -107,10 +107,26 @@ python Nine_Men's_Morris.py --player1 [type] --player2 [type] --num_games [numbe
 ```
 
 #### Example:
-To run 10 games between an AlphaBeta AI and a Random AI with the AlphaBeta player starting and no delay:
+To run 10 games between a Smart AI and a Random AI with the AlphaBeta player starting and no delay:
 
 ```bash
-python Nine_Men's_Morris.py --player1 alphabeta --player2 random --num_games 10 --first_player player1 --delay 0 --load
+python Nine_Men's_Morris.py --player1 smart --player2 random --num_games 10 --first_player player1 --delay 0 --load
+```
+
+To run 10 games between an AlphaBeta AI and a Smart AI with the AlphaBeta player starting and no delay:
+
+```bash
+python Nine_Men's_Morris.py --player1 alphabeta --player2 smart --num_games 10 --first_player player1 --delay 0 --load
+```
+To run 10 games between a MCTS AI and a Smart AI with the AlphaBeta player starting and no delay:
+
+```bash
+python Nine_Men's_Morris.py --player1 smart --player2 mcts --num_games 10 --first_player player1 --delay 0 --load
+```
+To run 10 games between a deep-q-learning AI and a Smart AI with the AlphaBeta player starting and no delay:
+
+```bash
+python Nine_Men's_Morris.py --player1 dqn --player2 smart --num_games 10 --first_player player1 --delay 0 --load
 ```
 
 #### Parameters:

@@ -331,7 +331,7 @@ def main():
         player_2 = get_player_by_type(args.player2, player_2_color, 2)
 
         game_manager = GameManager(player_1=player_1, player_2=player_2, delay_between_moves=args.delay,
-                                   num_of_games=args.num_games, player_1_starts_the_game=args.first_player == 'player1')
+                                   num_of_games=args.num_games)
         game_manager.start_game()
     else:
         # If no player arguments are given, show the opening screen
