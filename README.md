@@ -4,6 +4,17 @@
 ## Introduction
 Welcome to Nine Men's Morris, a classic strategy board game dating back to the Roman Empire. This game is designed for two players, aiming to form 'mills', that is a line of three of their pieces. It’s a game of strategy and tactical skill, now available with advanced AI options!
 
+## Screenshots to Illustrate
+
+There are some examples of the game:
+
+<div style="display: flex; justify-content: space-around;">
+  <img src="images/game_screenshot_1.png" alt="Board 1" width="30%" />
+  <img src="images/game_screenshot_4.png" alt="Board 2" width="30%" />
+  <img src="images/game_screenshot_3.png" alt="Board 3" width="30%" />
+</div>
+
+
 ## Game Rules
 
 ### Objective
