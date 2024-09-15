@@ -16,7 +16,7 @@ The objective is to reduce your opponent to two pieces or block all their possib
 ### Phases of the Game
 - **Placing Pieces Phase**: Players take turns placing their pieces on any empty spot on the board.
 - **Moving Pieces Phase**: Once all pieces are placed, players take turns moving their pieces to adjacent spots.
-- **Flying Phase**: When a player is reduced to three pieces, they can 'fly'—moving their pieces to any empty spot.
+- **Flying Phase**: When a player is reduced to three pieces, they can 'fly'—moving their pieces to any empty spot. (We did not implement this behavior in our version)
 
 ### Forming a Mill
 A 'mill' is formed when three pieces align in a straight line. Forming a mill allows the player to remove one of the opponent's pieces, except those in a mill (unless no other pieces are available).
