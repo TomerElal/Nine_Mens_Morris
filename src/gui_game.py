@@ -61,6 +61,9 @@ class GuiGame:
         self.game_loop()
         winner, score = self.get_game_result()
         if self.num_of_games > 1:
+            if not winner:
+                print("There was a Tie")
+                return 0, 0
             print("The Winner is " + winner.name + f" with score of"
                                                    f" {score} & {len(winner.pieces_on_board)} pieces left.")
             return self.game_state.get_player_number(winner.get_player_color()), winner
@@ -166,6 +169,9 @@ class GuiGame:
                 self.winner = curr_player
                 break
 
+            if self.curr_num_of_moves == 200:
+                self.winner = 0
+                break
             self.update_gui(curr_player)
 
     def update_gui(self, curr_player):
@@ -356,6 +362,8 @@ class GuiGame:
         return curr_player, other_player
 
     def get_game_result(self):
+        if not self.winner:
+            return 0, 0
         return self.winner, (len(self.winner.pieces_on_board) * 100) - self.curr_num_of_moves
 
     def place_piece_in_gui(self, row, col, piece_color):

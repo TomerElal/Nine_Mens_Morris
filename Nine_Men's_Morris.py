@@ -103,10 +103,14 @@ class GameManager:
 
         # Run the game and get the results
         winner_player_number, winner = new_game.run()
-        num_of_pieces_left_of_winner = len(winner.pieces_on_board)
-        num_of_moves_in_the_game = new_game.curr_num_of_moves
-        score = (num_of_pieces_left_of_winner * 100) - num_of_moves_in_the_game
-
+        if winner:
+            num_of_pieces_left_of_winner = len(winner.pieces_on_board)
+            num_of_moves_in_the_game = new_game.curr_num_of_moves
+            score = (num_of_pieces_left_of_winner * 100) - num_of_moves_in_the_game
+        else:
+            num_of_moves_in_the_game = 200
+            score = 0
+            num_of_pieces_left_of_winner = 0
         # Save results to CSV file
         self.save_results_to_csv(winner_player_number, num_of_pieces_left_of_winner, num_of_moves_in_the_game, score)
 
@@ -279,7 +283,7 @@ def train_model():
     dqn_agent.save_model(MODEL_PATH)
 
 
-def get_player_by_type(player_type, color):
+def get_player_by_type(player_type, color, player_number):
     """Initialize the player based on the type and color."""
     if player_type == "random":
         return RandomPlayer(RANDOM_PLAYER, NUM_OF_PIECES, color, is_computer_player=True, is_gui_game=True)
@@ -288,7 +292,7 @@ def get_player_by_type(player_type, color):
     elif player_type == "alphabeta":
         return GuiMultiAgentsPlayer(ALPHA_BETA_PLAYER, NUM_OF_PIECES, color, AlphaBetaAgent(), is_computer_player=True)
     elif player_type == "mcts":
-        return GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, color, MCTSAgent(1), is_computer_player=True)
+        return GuiMultiAgentsPlayer(MCTS_PLAYER, NUM_OF_PIECES, color, MCTSAgent(3 - player_number), is_computer_player=True)
     elif player_type == "dqn":
         return GuiMultiAgentsPlayer(DQN_PLAYER, NUM_OF_PIECES, color, dqn_agent, is_computer_player=True)
     else:
@@ -323,8 +327,8 @@ def main():
         player_1_color = CellState.WHITE if args.first_player == 'player1' else CellState.BLACK
         player_2_color = CellState.BLACK if args.first_player == 'player1' else CellState.WHITE
 
-        player_1 = get_player_by_type(args.player1, player_1_color)
-        player_2 = get_player_by_type(args.player2, player_2_color)
+        player_1 = get_player_by_type(args.player1, player_1_color, 1)
+        player_2 = get_player_by_type(args.player2, player_2_color, 2)
 
         game_manager = GameManager(player_1=player_1, player_2=player_2, delay_between_moves=args.delay,
                                    num_of_games=args.num_games, player_1_starts_the_game=args.first_player == 'player1')

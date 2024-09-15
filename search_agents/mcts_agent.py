@@ -32,7 +32,7 @@ class MCTSNode:
 
 
 class MCTSAgent:
-    def __init__(self, player_number_of_the_opponent, num_simulations=100):
+    def __init__(self, player_number_of_the_opponent, num_simulations=50):
         self.player_number_of_the_opponent = player_number_of_the_opponent
         self.num_simulations = num_simulations
 
